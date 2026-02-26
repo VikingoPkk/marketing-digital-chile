@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen">
+    <div class="max-w-3xl mx-auto">
+        <a href="javascript:history.back()" class="text-blue-600 font-bold mb-6 inline-block">← Volver al curso</a>
+        
+        <div class="bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-2 italic">Examen: {{ quiz.title }}</h1>
+            <p class="text-gray-500 mb-8 font-medium">Responde todas las preguntas para evaluar tu progreso en el módulo: <span class="text-blue-600">{{ quiz.module.title }}</span></p>
+            
+            <form method="POST">
+                {% csrf_token %}
+                {% for question in quiz.questions.all %}
+                <div class="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">{{ forloop.counter }}. {{ question.text }}</h3>
+                    
+                    <div class="space-y-4">
+                        <label class="flex items-center p-4 bg-white rounded-xl border-2 border-transparent hover:border-blue-500 cursor-pointer transition shadow-sm">
+                            <input type="radio" name="question_{{ question.id }}" value="1" class="w-5 h-5 text-blue-600" required>
+                            <span class="ml-4 text-gray-700 font-medium">{{ question.option1 }}</span>
+                        </label>
+                        
+                        <label class="flex items-center p-4 bg-white rounded-xl border-2 border-transparent hover:border-blue-500 cursor-pointer transition shadow-sm">
+                            <input type="radio" name="question_{{ question.id }}" value="2" class="w-5 h-5 text-blue-600">
+                            <span class="ml-4 text-gray-700 font-medium">{{ question.option2 }}</span>
+                        </label>
+                        
+                        <label class="flex items-center p-4 bg-white rounded-xl border-2 border-transparent hover:border-blue-500 cursor-pointer transition shadow-sm">
+                            <input type="radio" name="question_{{ question.id }}" value="3" class="w-5 h-5 text-blue-600">
+                            <span class="ml-4 text-gray-700 font-medium">{{ question.option3 }}</span>
+                        </label>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xl shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+                    Enviar Examen
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

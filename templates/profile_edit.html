@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+        
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-black text-gray-900 italic">Mi Perfil MD Chile</h2>
+            <p class="text-gray-500 font-medium">Actualiza tu información personal y foto de perfil</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Nombre Completo</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}" 
+                       class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all duration-300 shadow-sm"
+                       placeholder="Tu nombre">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">RUT (Facturación)</label>
+                <input type="text" name="rut" value="{{ user.rut|default:'' }}" 
+                       class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all duration-300 shadow-sm"
+                       placeholder="12.345.678-9">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Sobre mí (Biografía)</label>
+                <textarea name="bio" rows="3"
+                          class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all duration-300 shadow-sm h-28 resize-none">{{ user.bio }}</textarea>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-2xl border-2 border-dashed border-blue-200">
+                <label class="block text-sm font-bold text-blue-800 mb-3">Foto de Perfil Nueva</label>
+                <input type="file" name="avatar" 
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                <p class="text-[10px] text-blue-400 mt-2 italic">* Se recomienda una imagen cuadrada de buena calidad.</p>
+            </div>
+
+            <div class="pt-4 space-y-3">
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 hover:-translate-y-1 transition-all duration-300 text-lg">
+                    Guardar Cambios
+                </button>
+                
+                <a href="{% url 'dashboard' %}" 
+                   class="block text-center text-gray-400 font-bold py-2 hover:text-gray-600 transition-colors">
+                    Volver al Panel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

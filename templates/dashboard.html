@@ -1,76 +1,101 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="bg-gray-50 min-h-screen py-12 px-6">
-    <div class="max-w-6xl mx-auto">
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen">
+    
+    <div class="relative rounded-3xl overflow-hidden mb-12 shadow-2xl h-64 bg-blue-900">
+        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1350&q=80" 
+             class="absolute inset-0 w-full h-full object-cover opacity-30" alt="Banner">
         
-        {% if messages %}
-            {% for message in messages %}
-                <div class="mb-8 p-4 rounded-xl flex items-center shadow-sm border 
-                    {% if message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-200{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
-                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        <div class="relative z-10 p-10 flex items-center h-full">
+            <div class="relative group mr-8">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="w-32 h-32 rounded-full border-4 border-white shadow-2xl object-cover">
+                {% else %}
+                    <div class="w-32 h-32 rounded-full border-4 border-white bg-blue-500 flex items-center justify-center text-white text-4xl font-black italic shadow-2xl">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                
+                <a href="{% url 'edit_profile' %}" class="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg text-blue-600 hover:scale-110 transition transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.172-1.172A1 1 0 0011.707 3H8.293a1 1 0 00-.707.293L6.414 4.707A1 1 0 015.707 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                     </svg>
-                    <span class="font-medium">{{ message }}</span>
-                </div>
-            {% endfor %}
-        {% endif %}
-
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800">Mis Cursos y Explorar</h1>
-                <p class="text-gray-500 mt-1">Accede a tus contenidos o descubre nuevas especialidades.</p>
+                </a>
             </div>
-            <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-2 rounded-full border border-blue-200">
-                <i class="fas fa-user-graduate mr-2"></i> {{ user.email }}
-            </span>
-        </div>
 
+            <div class="flex flex-col">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white italic mb-2">
+                    ¡Hola, {{ user.first_name|default:user.username }}!
+                </h1>
+                <p class="text-blue-100 text-lg md:text-xl font-medium max-w-2xl">
+                    Sigue transformando tu futuro digital hoy mismo en MD Chile.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-16">
+        <h2 class="text-2xl font-bold mb-6 text-blue-800 flex items-center">
+            <span class="bg-blue-100 p-2 rounded-lg mr-3 shadow-sm">📚</span> Mis Cursos Activos
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {% for curso in cursos %}
-                <div class="bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
-                    
-                    <div class="relative h-48 overflow-hidden">
-                        {% if curso.image %}
-                            <img src="{{ curso.image.url }}" class="w-full h-full object-cover" alt="{{ curso.title }}">
+            {% for item in cursos_inscritos %}
+                <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transform transition hover:scale-105 duration-300">
+                    <div class="h-48 w-full overflow-hidden bg-gray-200">
+                        {% if item.curso.image %}
+                            <img src="{{ item.curso.image.url }}" class="w-full h-full object-cover" alt="{{ item.curso.title }}">
                         {% else %}
-                            <div class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-white p-6 text-center">
-                                <span class="font-bold text-lg">{{ curso.title }}</span>
-                            </div>
-                        {% endif %}
-                        
-                        {% if curso.id in mis_matriculas_ids %}
-                            <div class="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
-                                Ya es tuyo
-                            </div>
+                            <div class="w-full h-full flex items-center justify-center text-gray-400 font-bold italic">Marketing Digital Chile</div>
                         {% endif %}
                     </div>
                     
-                    <div class="p-6 flex flex-col flex-grow">
-                        <h3 class="text-xl font-bold text-gray-900 mb-2 leading-tight">{{ curso.title }}</h3>
-                        <p class="text-gray-600 text-sm line-clamp-3 mb-6 flex-grow">{{ curso.description }}</p>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">{{ item.curso.title }}</h3>
                         
-                        <div class="flex justify-between items-center pt-4 border-t border-gray-50">
-                            {% if curso.id in mis_matriculas_ids %}
-                                <div class="flex flex-col">
-                                    <span class="text-xs text-gray-400 uppercase font-bold">Estado</span>
-                                    <span class="text-green-600 font-bold text-sm">Inscrito</span>
-                                </div>
-                                <a href="{% url 'course_detail' curso.id %}" class="bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-700 transition shadow-md">
-                                    Ingresar
-                                </a>
-                            {% else %}
-                                <span class="text-2xl font-black text-gray-900">${{ curso.price }}</span>
-                                <a href="{% url 'checkout' curso.id %}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-md">
-                                    Comprar
-                                </a>
-                            {% endif %}
+                        <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                            <div class="bg-gradient-to-r from-blue-600 to-green-400 h-4 rounded-full transition-all duration-700" 
+                                 style="width: {{ item.progreso }}%"></div>
                         </div>
+                        
+                        <div class="flex justify-between items-center mb-6">
+                            <p class="text-xs font-bold text-gray-500">{{ item.progreso }}% completado</p>
+                            <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full uppercase font-black">Activo</span>
+                        </div>
+                        
+                        <a href="{% url 'course_detail' item.curso.id %}" class="block text-center bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition">
+                            Continuar Aprendiendo
+                        </a>
                     </div>
                 </div>
             {% empty %}
-                <div class="col-span-1 md:col-span-3 bg-white border-2 border-dashed border-gray-200 rounded-3xl py-20 text-center">
-                    <p class="text-gray-500 text-lg font-medium">No hay cursos publicados todavía.</p>
+                <div class="col-span-full py-12 text-center bg-white rounded-3xl border-2 border-dashed border-gray-200">
+                    <p class="text-gray-400">Aún no tienes cursos inscritos.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <h2 class="text-2xl font-bold mb-6 text-gray-700 flex items-center">
+            <span class="bg-gray-200 p-2 rounded-lg mr-3 shadow-sm">🚀</span> Explorar Academia
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for curso in otros_cursos %}
+                <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl transition duration-300 flex flex-col">
+                    <div class="h-40 w-full overflow-hidden bg-gray-100">
+                        {% if curso.image %}
+                            <img src="{{ curso.image.url }}" class="w-full h-full object-cover" alt="{{ curso.title }}">
+                        {% endif %}
+                    </div>
+                    <div class="p-6 flex-grow">
+                        <h3 class="text-lg font-bold mb-2 text-gray-800">{{ curso.title }}</h3>
+                        <p class="text-gray-500 text-xs mb-6 line-clamp-2">{{ curso.description }}</p>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <a href="{% url 'checkout' curso.id %}" class="block text-center border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-2 rounded-xl font-bold transition">
+                            Ver Detalles
+                        </a>
+                    </div>
                 </div>
             {% endfor %}
         </div>

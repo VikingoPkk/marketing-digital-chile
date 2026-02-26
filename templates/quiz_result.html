@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 text-center border border-gray-100">
+        <div class="mb-6">
+            {% if puntos == total %}
+                <span class="text-6xl">🏆</span>
+                <h1 class="text-3xl font-black text-green-600 mt-4 italic">¡Puntaje Perfecto!</h1>
+            {% elif puntos > 0 %}
+                <span class="text-6xl">✅</span>
+                <h1 class="text-3xl font-black text-blue-600 mt-4 italic">¡Buen trabajo!</h1>
+            {% else %}
+                <span class="text-6xl">📝</span>
+                <h1 class="text-3xl font-black text-yellow-600 mt-4 italic">Sigue practicando</h1>
+            {% endif %}
+        </div>
+        
+        <div class="bg-gray-100 rounded-2xl p-6 mb-8">
+            <p class="text-gray-500 font-bold uppercase text-xs tracking-widest mb-2">Tu resultado final</p>
+            <h2 class="text-5xl font-extrabold text-gray-900">{{ puntos }} / {{ total }}</h2>
+        </div>
+
+        <p class="text-gray-600 mb-8 italic font-medium">Has completado con éxito el examen de {{ quiz.title }}.</p>
+        
+        <a href="{% url 'course_detail' quiz.module.course.id %}" class="block bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition transform hover:scale-105">
+            Volver al Contenido del Curso
+        </a>
+    </div>
+</div>
+{% endblock %}

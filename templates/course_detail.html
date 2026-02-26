@@ -1,64 +1,93 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="bg-gray-900 min-h-screen">
-    <div class="flex flex-col lg:flex-row h-screen">
-        
-        <div class="flex-grow bg-black flex flex-col">
-            <div class="relative w-full" style="padding-top: 56.25%;">
-                {% if leccion_actual and leccion_actual.video_url %}
-                    <iframe 
-                        class="absolute top-0 left-0 w-full h-full"
-                        src="{{ leccion_actual.video_url }}" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
-                {% else %}
-                    <div class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-gray-500">
-                        <div class="text-center">
-                            <i class="fas fa-play-circle text-6xl mb-4"></i>
-                            <p class="text-xl">No hay video seleccionado para esta lección.</p>
-                        </div>
-                    </div>
+<div class="bg-gray-900 min-h-screen flex flex-col lg:flex-row h-screen">
+    
+    <div class="flex-grow bg-black flex flex-col overflow-y-auto">
+        <div class="relative w-full" style="padding-top: 56.25%;">
+            {% if leccion_actual and leccion_actual.video_url %}
+                <iframe 
+                    class="absolute top-0 left-0 w-full h-full" 
+                    src="{{ leccion_actual.video_url }}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            {% else %}
+                <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center bg-gray-800 text-white italic p-10 text-center">
+                    <i class="fas fa-play-circle text-6xl mb-4 text-gray-600"></i>
+                    <p class="text-xl font-bold">Selecciona una lección para comenzar a aprender</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="p-8 text-white bg-gray-900">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-8 mb-8 gap-4">
+                {% if leccion_actual %}
+                <div>
+                    <h1 class="text-3xl font-extrabold mb-2 italic">{{ leccion_actual.title }}</h1>
+                    <p class="text-blue-400 font-medium">{{ curso.title }}</p>
+                </div>
+                
+                <div class="flex items-center">
+                    <a href="{% url 'toggle_lesson' leccion_actual.id %}" 
+                       class="px-8 py-3 rounded-2xl font-black transition shadow-lg flex items-center 
+                       {% if leccion_completada %} bg-green-600 hover:bg-green-700 {% else %} bg-blue-600 hover:bg-blue-700 {% endif %}">
+                        {% if leccion_completada %}
+                            <i class="fas fa-check-circle mr-2"></i> Lección Completada
+                        {% else %}
+                            <i class="fas fa-circle mr-2"></i> Marcar como Terminada
+                        {% endif %}
+                    </a>
+                </div>
                 {% endif %}
             </div>
 
-            <div class="p-8 bg-gray-900 text-white border-t border-gray-800">
-                <h1 class="text-3xl font-bold mb-2">{{ leccion_actual.title }}</h1>
-                <p class="text-gray-400">{{ curso.title }} • Módulo: {{ leccion_actual.module.title }}</p>
-                <div class="mt-6 prose prose-invert max-w-none text-gray-300">
-                    {{ leccion_actual.content|linebreaks }}
-                </div>
+            <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed">
+                {{ leccion_actual.content|linebreaks }}
             </div>
         </div>
+    </div>
 
-        <div class="w-full lg:w-96 bg-gray-800 border-l border-gray-700 overflow-y-auto">
-            <div class="p-6 border-b border-gray-700 bg-gray-800 sticky top-0 z-10">
-                <h2 class="text-xl font-bold text-white">Contenido del curso</h2>
-            </div>
+    <div class="w-full lg:w-96 bg-gray-800 border-l border-gray-700 flex flex-col h-screen overflow-y-auto shadow-2xl">
+        <div class="p-6 border-b border-gray-700 bg-gray-800 sticky top-0 z-10">
+            <h2 class="text-xl font-black text-white uppercase tracking-tighter italic">Contenido del Curso</h2>
+        </div>
 
-            <div class="divide-y divide-gray-700">
-                {% for modulo in modulos %}
-                    <div class="bg-gray-850">
-                        <div class="p-4 bg-gray-700/30 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            {{ modulo.title }}
-                        </div>
+        <div class="divide-y divide-gray-700">
+            {% for modulo in modulos %}
+                <div class="p-4 bg-gray-900/80 text-xs font-black text-gray-500 uppercase tracking-widest flex justify-between items-center">
+                    {{ modulo.title }}
+                    <span class="text-[10px] bg-gray-800 px-2 py-0.5 rounded text-gray-400">{{ modulo.lessons.count }} clases</span>
+                </div>
+
+                {% for leccion in modulo.lessons.all %}
+                    <a href="?leccion={{ leccion.id }}" 
+                       class="flex items-center justify-between p-4 hover:bg-gray-700 transition border-l-4 
+                       {% if leccion == leccion_actual %} border-blue-500 bg-gray-700/50 text-white {% else %} border-transparent text-gray-400 {% endif %}">
                         
-                        <div class="flex flex-col">
-                            {% for leccion in modulo.lessons.all %}
-                                <a href="?leccion={{ leccion.id }}" 
-                                   class="flex items-center p-4 hover:bg-gray-700 transition border-l-4 {% if leccion == leccion_actual %}border-blue-500 bg-gray-700/50 text-white{% else %}border-transparent text-gray-400{% endif %}">
-                                    <i class="fas {% if leccion == leccion_actual %}fa-play-circle text-blue-400{% else %}fa-lock-open text-gray-600{% endif %} mr-3"></i>
-                                    <span class="text-sm font-medium">{{ leccion.title }}</span>
-                                </a>
-                            {% empty %}
-                                <p class="p-4 text-xs text-gray-600 italic">Próximamente...</p>
-                            {% endfor %}
+                        <div class="flex items-center">
+                            <i class="fas fa-play-circle mr-3 {% if leccion == leccion_actual %} text-blue-500 {% else %} text-gray-600 {% endif %}"></i>
+                            <span class="text-sm font-medium">{{ leccion.title }}</span>
                         </div>
-                    </div>
+
+                        {% if leccion.id in lecciones_completadas_ids %}
+                            <i class="fas fa-check-circle text-green-500"></i>
+                        {% endif %}
+                    </a>
                 {% endfor %}
-            </div>
+
+                {% if modulo.quiz %}
+                    <div class="p-3 bg-gray-900/30">
+                        <a href="{% url 'take_quiz' modulo.quiz.id %}" 
+                           class="flex items-center justify-center p-3 bg-yellow-600/10 border border-yellow-600/50 rounded-xl text-yellow-500 hover:bg-yellow-600 hover:text-white transition group">
+                            <i class="fas fa-file-alt mr-2 group-hover:scale-110 transition"></i>
+                            <span class="text-xs font-black uppercase italic">Realizar Examen del Módulo</span>
+                        </a>
+                    </div>
+                {% endif %}
+
+            {% endfor %}
         </div>
     </div>
 </div>

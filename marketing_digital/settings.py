@@ -105,4 +105,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'users.User'
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' 
+
+# Permite que el navegador renderice iframes correctamente
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Asegúrate de NO tener 'django.middleware.clickjacking.XFrameOptionsMiddleware' 
+# bloqueando todo. Si está en MIDDLEWARE, déjalo, pero con la configuración de arriba.
