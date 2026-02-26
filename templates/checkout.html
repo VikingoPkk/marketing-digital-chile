@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-16 px-6">
+    <div class="max-w-4xl mx-auto bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Confirmar tu inscripción</h1>
+        
+        <div class="flex items-center mb-8 p-6 bg-blue-50 rounded-2xl">
+            {% if curso.image %}
+                <img src="{{ curso.image.url }}" class="w-24 h-24 object-cover rounded-xl mr-6">
+            {% endif %}
+            <div>
+                <h2 class="text-xl font-bold">{{ curso.title }}</h2>
+                <p class="text-2xl font-black text-blue-600 mt-2">${{ curso.price }}</p>
+            </div>
+        </div>
+
+        <p class="text-gray-600 mb-8 text-lg">Al confirmar, tendrás acceso inmediato a todas las lecciones y material descargable del curso.</p>
+
+        <a href="{% url 'enroll_trial' curso.id %}" class="w-full block text-center bg-blue-600 text-white py-4 rounded-xl font-bold text-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+            Confirmar Pago y Empezar ahora
+        </a>
+    </div>
+</div>
+{% endblock %}

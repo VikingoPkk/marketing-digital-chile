@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen py-12 px-6">
+    <div class="max-w-6xl mx-auto">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-8 p-4 rounded-xl flex items-center shadow-sm border 
+                    {% if message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-200{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
+                    <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-medium">{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Mis Cursos y Explorar</h1>
+                <p class="text-gray-500 mt-1">Accede a tus contenidos o descubre nuevas especialidades.</p>
+            </div>
+            <span class="bg-blue-100 text-blue-800 text-sm font-semibold px-4 py-2 rounded-full border border-blue-200">
+                <i class="fas fa-user-graduate mr-2"></i> {{ user.email }}
+            </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {% for curso in cursos %}
+                <div class="bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
+                    
+                    <div class="relative h-48 overflow-hidden">
+                        {% if curso.image %}
+                            <img src="{{ curso.image.url }}" class="w-full h-full object-cover" alt="{{ curso.title }}">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center text-white p-6 text-center">
+                                <span class="font-bold text-lg">{{ curso.title }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if curso.id in mis_matriculas_ids %}
+                            <div class="absolute top-4 left-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                                Ya es tuyo
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 leading-tight">{{ curso.title }}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-6 flex-grow">{{ curso.description }}</p>
+                        
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-50">
+                            {% if curso.id in mis_matriculas_ids %}
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-400 uppercase font-bold">Estado</span>
+                                    <span class="text-green-600 font-bold text-sm">Inscrito</span>
+                                </div>
+                                <a href="{% url 'course_detail' curso.id %}" class="bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-700 transition shadow-md">
+                                    Ingresar
+                                </a>
+                            {% else %}
+                                <span class="text-2xl font-black text-gray-900">${{ curso.price }}</span>
+                                <a href="{% url 'checkout' curso.id %}" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-md">
+                                    Comprar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-span-1 md:col-span-3 bg-white border-2 border-dashed border-gray-200 rounded-3xl py-20 text-center">
+                    <p class="text-gray-500 text-lg font-medium">No hay cursos publicados todavía.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
