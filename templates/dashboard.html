@@ -40,16 +40,22 @@
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             {% for item in cursos_inscritos %}
-                <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transform transition hover:scale-105 duration-300">
-                    <div class="h-48 w-full overflow-hidden bg-gray-200">
+                <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 transform transition hover:scale-105 duration-300 flex flex-col">
+                    <div class="h-48 w-full overflow-hidden bg-gray-200 relative">
                         {% if item.curso.image %}
                             <img src="{{ item.curso.image.url }}" class="w-full h-full object-cover" alt="{{ item.curso.title }}">
                         {% else %}
-                            <div class="w-full h-full flex items-center justify-center text-gray-400 font-bold italic">Marketing Digital Chile</div>
+                            <div class="w-full h-full flex items-center justify-center text-gray-400 font-bold italic bg-gray-100">Marketing Digital Chile</div>
+                        {% endif %}
+                        
+                        {% if item.progreso == 100 %}
+                        <div class="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase shadow-lg">
+                            Completado ✨
+                        </div>
                         {% endif %}
                     </div>
                     
-                    <div class="p-6">
+                    <div class="p-6 flex-grow flex flex-col">
                         <h3 class="text-xl font-bold mb-4 text-gray-800">{{ item.curso.title }}</h3>
                         
                         <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
@@ -59,17 +65,32 @@
                         
                         <div class="flex justify-between items-center mb-6">
                             <p class="text-xs font-bold text-gray-500">{{ item.progreso }}% completado</p>
-                            <span class="text-[10px] bg-green-100 text-green-700 px-2 py-1 rounded-full uppercase font-black">Activo</span>
+                            <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full uppercase font-black tracking-tighter">Estudiante</span>
                         </div>
                         
-                        <a href="{% url 'course_detail' item.curso.id %}" class="block text-center bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition">
-                            Continuar Aprendiendo
-                        </a>
+                        <div class="space-y-3 mt-auto">
+                            <a href="{% url 'course_detail' item.curso.id %}" class="block text-center bg-blue-600 text-white py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg transition">
+                                {% if item.progreso == 100 %}Repasar Curso{% else %}Continuar Aprendiendo{% endif %}
+                            </a>
+
+                            {% if item.progreso == 100 %}
+                                <a href="{% url 'check_certificate' item.curso.id %}" 
+                                   class="block text-center bg-yellow-500 text-white py-3 rounded-2xl font-black hover:bg-yellow-600 shadow-lg transition border-b-4 border-yellow-700 active:border-0 transform active:translate-y-1">
+                                    🎓 OBTENER MI DIPLOMA
+                                </a>
+                            {% else %}
+                                <div class="bg-gray-50 border border-gray-100 p-3 rounded-2xl text-center">
+                                    <p class="text-[10px] text-gray-400 font-bold uppercase italic tracking-widest">
+                                        Diploma disponible al 100%
+                                    </p>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% empty %}
                 <div class="col-span-full py-12 text-center bg-white rounded-3xl border-2 border-dashed border-gray-200">
-                    <p class="text-gray-400">Aún no tienes cursos inscritos.</p>
+                    <p class="text-gray-400 font-medium">Aún no tienes cursos inscritos en tu academia.</p>
                 </div>
             {% endfor %}
         </div>
@@ -89,7 +110,7 @@
                     </div>
                     <div class="p-6 flex-grow">
                         <h3 class="text-lg font-bold mb-2 text-gray-800">{{ curso.title }}</h3>
-                        <p class="text-gray-500 text-xs mb-6 line-clamp-2">{{ curso.description }}</p>
+                        <p class="text-gray-500 text-xs mb-6 line-clamp-2 font-medium">{{ curso.description }}</p>
                     </div>
                     <div class="p-6 pt-0">
                         <a href="{% url 'checkout' curso.id %}" class="block text-center border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white py-2 rounded-xl font-bold transition">

@@ -3,65 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Digital Chile | Plataforma de Cursos</title>
+    <title>Marketing Digital Chile | Agencia & Academia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
 
     <nav class="bg-white shadow-md py-4 px-6 flex justify-between items-center sticky top-0 z-50">
-        <a href="{% url 'home' %}" class="text-2xl font-bold text-blue-600">
+        <a href="{% url 'home' %}" class="text-2xl font-black text-blue-600 italic">
             MD <span class="text-gray-900">Chile</span>
         </a>
 
-        <div class="hidden md:flex space-x-6 font-medium text-gray-700">
+        <div class="hidden md:flex space-x-8 font-bold text-gray-600 uppercase text-sm tracking-widest">
             <a href="{% url 'home' %}" class="hover:text-blue-600 transition">Inicio</a>
             <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition">Cursos</a>
-            <a href="#" class="hover:text-blue-600 transition">Servicios</a>
-            <a href="#" class="hover:text-blue-600 transition">Contacto</a>
+            <a href="{% url 'services_list' %}" class="hover:text-blue-600 transition">Servicios</a>
+            <a href="{% url 'contact_view' %}" class="hover:text-blue-600 transition">Contacto</a>
         </div>
 
         <div class="flex items-center space-x-4">
             {% if user.is_authenticated %}
-                <span class="text-sm text-gray-600 hidden md:block">
-                    Hola, <span class="font-bold text-blue-600">
-                        {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.email }}{% endif %}
+                <div class="hidden lg:flex flex-col items-end mr-2">
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Alumno Activo</span>
+                    <span class="text-sm font-bold text-blue-600 leading-none">
+                        {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %}
                     </span>
-                </span>
+                </div>
                 
-                <a href="{% url 'dashboard' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition font-medium">
+                <a href="{% url 'dashboard' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200 transition font-bold text-sm">
                     Mi Panel
                 </a>
                 
                 <form method="post" action="{% url 'account_logout' %}" class="inline">
                     {% csrf_token %}
-                    <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium ml-2">
-                        Salir
+                    <button type="submit" class="text-gray-400 hover:text-red-500 transition ml-2">
+                        <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </form>
             {% else %}
-                <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-blue-600 font-medium">
+                <a href="{% url 'account_login' %}" class="text-gray-700 hover:text-blue-600 font-bold text-sm">
                     Entrar
                 </a>
-                <a href="{% url 'account_signup' %}" class="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 shadow-md transition font-medium">
-                    Empezar Gratis
+                <a href="{% url 'account_signup' %}" class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 shadow-lg transition font-black text-sm italic">
+                    EMPEZAR GRATIS
                 </a>
             {% endif %}
         </div>
     </nav>
 
+    {% if messages %}
+    <div class="fixed top-20 right-6 z-[60] space-y-4">
+        {% for message in messages %}
+        <div class="bg-white border-l-4 {% if message.tags == 'success' %} border-green-500 {% else %} border-blue-500 {% endif %} shadow-2xl p-4 rounded-r-xl flex items-center space-x-3 animate-bounce">
+            <i class="fas fa-check-circle {% if message.tags == 'success' %} text-green-500 {% else %} text-blue-500 {% endif %} text-xl"></i>
+            <p class="text-gray-800 font-bold text-sm">{{ message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <main class="flex-grow">
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-gray-900 text-white py-12 px-6">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
-            <div>
-                <h3 class="text-xl font-bold mb-4 text-blue-400">MD Chile</h3>
-                <p class="text-gray-400">Transformamos emprendedores en expertos digitales. Formación con sello chileno.</p>
+    <footer class="bg-gray-900 text-white py-16 px-6">
+        <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="col-span-1 md:col-span-2">
+                <h3 class="text-2xl font-black mb-6 text-blue-400 italic">MD CHILE</h3>
+                <p class="text-gray-400 max-w-sm mb-6 font-medium">Líderes en transformación digital y formación de alto impacto. Elevamos marcas chilenas al estándar global.</p>
+                <div class="flex space-x-5 text-2xl">
+                    <a href="#" class="text-gray-500 hover:text-blue-400 transition"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-pink-400 transition"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-blue-300 transition"><i class="fab fa-linkedin"></i></a>
+                </div>
             </div>
             <div>
-                <h3 class="text-xl font-bold mb-4">Síguenos</h3>
-                <div class="flex justify-center md:justify-start space-x-6 text-2xl text-gray-400">
-                    <a href="#" class="hover:text-blue-400 transition"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="hover:text-pink-400 transition"><i class="fab fa-instagram"></i>
+                <h4 class="text-sm font-black uppercase tracking-widest mb-6 text-gray-500">Navegación</h4>
+                <ul class="space-y-4 font-bold text-gray-400">
+                    <li><a href="{% url 'services_list' %}" class="hover:text-white transition">Servicios</a></li>
+                    <li><a href="{% url 'dashboard' %}" class="hover:text-white transition">Academia</a></li>
+                    <li><a href="{% url 'contact_view' %}" class="hover:text-white transition">Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-sm font-black uppercase tracking-widest mb-6 text-gray-500">Legal</h4>
+                <ul class="space-y-4 font-bold text-gray-400">
+                    <li><a href="#" class="hover:text-white transition">Privacidad</a></li>
+                    <li><a href="#" class="hover:text-white transition">Términos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 mt-16 pt-8 text-center text-gray-600 text-xs font-bold uppercase tracking-widest">
+            &copy; 2026 Marketing Digital Chile - Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <a href="https://wa.me/56975899661" target="_blank" 
+       class="fixed bottom-8 right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform z-50 flex items-center justify-center border-4 border-white">
+        <i class="fab fa-whatsapp text-3xl"></i>
+    </a>
+
+</body>
+</html>

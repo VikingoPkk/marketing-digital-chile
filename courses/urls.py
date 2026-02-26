@@ -1,0 +1,2 @@
+path('verificar-certificado/<int:course_id>/', check_and_generate_certificate, name='check_certificate'),
+path('descargar-diploma/<int:certificate_id>/', generate_diploma_pdf, name='generate_diploma_pdf'),

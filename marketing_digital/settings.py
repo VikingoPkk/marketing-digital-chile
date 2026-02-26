@@ -19,7 +19,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites', 
 
-    'users',
+    'agency',  # <-- AGREGADA COMA AQUÍ (Evita el error agencyusers)
+    'users',   # <-- AGREGADA COMA AQUÍ
     'courses',
 
     'allauth',
@@ -109,6 +110,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Permite que el navegador renderice iframes correctamente
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-# Asegúrate de NO tener 'django.middleware.clickjacking.XFrameOptionsMiddleware' 
-# bloqueando todo. Si está en MIDDLEWARE, déjalo, pero con la configuración de arriba.
