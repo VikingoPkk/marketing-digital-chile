@@ -6,16 +6,24 @@ from django.contrib import messages
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
-from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz
 
-# 1. VISTAS PRINCIPALES
+# IMPORTANTE: Asegúrate de que estos modelos existan en tu models.py
+from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz
+from agency.models import Service # Conexión con tu app de servicios
+
+# 1. VISTAS DE NAVEGACIÓN Y AGENCIA
 def home(request):
     """Página de inicio de la plataforma."""
     return render(request, 'home.html')
 
+def services_list(request):
+    """Muestra tus servicios reales (ADS, Consultoría, etc.) desde la app Agency."""
+    servicios_db = Service.objects.filter(is_active=True).order_by('order')
+    return render(request, 'services.html', {'servicios': servicios_db})
+
 @login_required
 def dashboard(request):
-    """Panel del alumno con progreso de cursos."""
+    """Panel del alumno con progreso real de cursos."""
     inscripciones = Enrollment.objects.filter(user=request.user)
     cursos_inscritos = []
 
@@ -34,7 +42,6 @@ def dashboard(request):
             'progreso': progreso
         })
 
-    # Cursos disponibles para inscribirse
     otros_cursos = Course.objects.exclude(enrollment__user=request.user).filter(is_published=True)
 
     return render(request, 'dashboard.html', {
@@ -42,54 +49,79 @@ def dashboard(request):
         'otros_cursos': otros_cursos
     })
 
+# 2. LÓGICA DE CURSOS Y CLASES (ESTO ARREGLA TU ERROR)
 @login_required
 def course_detail(request, course_id):
-    """Vista de las lecciones del curso."""
+    """Vista mejorada que carga la lección actual para evitar el error de ID."""
     course = get_object_or_404(Course, id=course_id)
+    
     # Verifica si el usuario está inscrito
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
         return redirect('checkout', course_id=course.id)
-    return render(request, 'courses/course_detail.html', {'course': course})
 
-# 2. LÓGICA DE PROGRESO Y CLASES
+    # Obtenemos todas las lecciones del curso ordenadas por módulo
+    lessons = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
+    
+    if not lessons.exists():
+        messages.warning(request, f"El curso '{course.title}' aún no tiene lecciones cargadas.")
+        return redirect('dashboard')
+
+    # Identificamos qué lección mostrar (la seleccionada o la primera)
+    lesson_id = request.GET.get('lesson')
+    if lesson_id:
+        current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
+    else:
+        current_lesson = lessons.first()
+
+    # Cálculo de progreso específico para este curso
+    total = lessons.count()
+    completas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
+    progreso = int((completas / total) * 100) if total > 0 else 0
+
+    return render(request, 'courses/course_detail.html', {
+        'course': course,
+        'lessons': lessons,
+        'current_lesson': current_lesson, # Esta es la variable clave que faltaba
+        'progreso_curso': progreso
+    })
+
 @login_required
 def toggle_lesson_completion(request, lesson_id):
-    """Marca una lección como completada o pendiente."""
+    """Marca una lección como completada y mantiene al usuario en la misma clase."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
     progress, created = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
     progress.save()
-    return redirect('course_detail', course_id=lesson.module.course.id)
+    return redirect(f"/course/{lesson.module.course.id}/?lesson={lesson.id}")
 
 @login_required
 def enroll_trial(request, course_id):
-    """Inscripción rápida/gratuita."""
+    """Inscripción rápida."""
     course = get_object_or_404(Course, id=course_id)
     Enrollment.objects.get_or_create(user=request.user, course=course)
     return redirect('dashboard')
 
 @login_required
 def checkout(request, course_id):
-    """Página de preventa/pago del curso."""
+    """Página de preventa."""
     course = get_object_or_404(Course, id=course_id)
     return render(request, 'courses/checkout.html', {'course': course})
 
 @login_required
 def take_quiz(request, quiz_id):
-    """Vista para realizar exámenes."""
+    """Vista para exámenes."""
     quiz = get_object_or_404(Quiz, id=quiz_id)
     return render(request, 'courses/quiz.html', {'quiz': quiz})
 
 @login_required
 def edit_profile(request):
-    """Edición de perfil de usuario."""
-    # Aquí iría tu lógica de formulario de perfil
+    """Edición de perfil."""
     return render(request, 'account/edit_profile.html')
 
-# 3. SISTEMA DE DIPLOMAS
+# 3. SISTEMA DE DIPLOMAS (TU DISEÑO ORIGINAL)
 @login_required
 def check_certificate(request, course_id):
-    """Verifica progreso y redirige a la generación del diploma."""
+    """Verifica progreso y genera diploma."""
     course = get_object_or_404(Course, id=course_id)
     total_lessons = course.total_lessons
     completed_lessons = LessonProgress.objects.filter(
@@ -107,18 +139,17 @@ def check_certificate(request, course_id):
 
 @login_required
 def generate_diploma_pdf(request, certificate_id):
-    """Dibuja y descarga el diploma en PDF."""
+    """Dibuja el PDF con tu diseño de MD Chile."""
     cert = get_object_or_404(Certificate, id=certificate_id, user=request.user)
     
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=landscape(A4))
     width, height = landscape(A4)
 
-    # --- DISEÑO ---
+    # --- Tu diseño de bordes y colores ---
     c.setStrokeColorRGB(0.1, 0.3, 0.8) 
     c.setLineWidth(8)
     c.rect(1*cm, 1*cm, width-2*cm, height-2*cm)
-    
     c.setStrokeColorRGB(0.8, 0.6, 0.2) 
     c.setLineWidth(2)
     c.rect(1.4*cm, 1.4*cm, width-2.8*cm, height-2.8*cm)

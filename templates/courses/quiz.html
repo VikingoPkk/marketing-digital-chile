@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 relative">
+    
+    <div id="timer-container" class="fixed top-24 right-8 z-50 bg-white shadow-2xl rounded-2xl p-4 border-2 border-blue-600 transition-all duration-300">
+        <p class="text-xs font-bold text-blue-600 uppercase tracking-widest text-center mb-1">Tiempo Restante</p>
+        <div id="timer" class="text-3xl font-black text-gray-800 font-mono">35:00</div>
+    </div>
+
+    <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
+        <div class="bg-blue-900 p-8 text-white">
+            <h1 class="text-3xl font-black italic mb-2 uppercase">{{ quiz.title }}</h1>
+            <p class="text-blue-200">Responde con calma, tienes 35 minutos.</p>
+        </div>
+
+        <div class="p-8">
+            <form method="POST" id="quiz-form">
+                {% csrf_token %}
+                {% for question in quiz.questions.all %}
+                <div class="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <span class="bg-blue-600 text-white px-3 py-1 rounded-lg mr-2">{{ forloop.counter }}</span>
+                        {{ question.text }}
+                    </h3>
+                    <div class="space-y-3">
+                        {% for i in "123" %}
+                        <label class="flex items-center p-4 bg-white rounded-xl border border-gray-200 cursor-pointer hover:border-blue-500 transition shadow-sm">
+                            <input type="radio" name="question_{{ question.id }}" value="{{ i }}" class="w-5 h-5 text-blue-600 mr-4" required>
+                            <span class="text-gray-700 font-medium">
+                                {% if i == "1" %}{{ question.option1 }}{% elif i == "2" %}{{ question.option2 }}{% else %}{{ question.option3 }}{% endif %}
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-10 py-5 rounded-2xl font-black shadow-lg transition transform hover:scale-105 uppercase tracking-widest">
+                    FINALIZAR EXAMEN AHORA 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Configuración del tiempo: 35 minutos en segundos
+    let timeLeft = 35 * 60; 
+    const timerDisplay = document.getElementById('timer');
+    const timerContainer = document.getElementById('timer-container');
+    const quizForm = document.getElementById('quiz-form');
+
+    const countdown = setInterval(() => {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+
+        // Formato 00:00
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+
+        timerDisplay.innerHTML = `${minutes}:${seconds}`;
+
+        // Alerta visual cuando queda menos de 5 minutos
+        if (timeLeft <= 300) {
+            timerContainer.classList.remove('border-blue-600');
+            timerContainer.classList.add('border-red-600', 'animate-pulse');
+            timerDisplay.classList.add('text-red-600');
+        }
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert("¡El tiempo se ha agotado! Tu examen se enviará automáticamente.");
+            quizForm.submit(); // Envío automático
+        }
+        timeLeft--;
+    }, 1000);
+</script>
+{% endblock %}
