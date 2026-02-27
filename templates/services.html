@@ -1,17 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="bg-white py-16 px-4">
+<div class="bg-white py-20 px-6">
     <div class="max-w-6xl mx-auto text-center">
-        <h1 class="text-4xl font-black text-blue-900 mb-12 uppercase italic">Nuestros Servicios</h1>
+        <h1 class="text-4xl font-black text-blue-900 mb-6 uppercase italic tracking-tighter">Nuestros Servicios</h1>
+        <p class="text-gray-500 font-medium mb-12 max-w-2xl mx-auto uppercase text-xs tracking-widest">Soluciones de alto impacto para elevar marcas chilenas al estándar global.</p>
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             {% for s in servicios %}
-                <div class="p-8 bg-gray-50 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-6 italic">🚀</div>
-                    <h3 class="text-2xl font-black text-gray-800 mb-3 uppercase italic">{{ s.name }}</h3>
-                    <p class="text-gray-500 text-sm italic">{{ s.description|default:"Servicio de MD Chile." }}</p>
+                <div class="p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group">
+                    <div class="text-5xl mb-6 italic group-hover:scale-110 transition-transform inline-block">🚀</div>
+                    <h3 class="text-2xl font-black text-gray-800 mb-4 uppercase italic tracking-tighter">{{ s.name }}</h3>
+                    <p class="text-gray-500 text-sm font-medium leading-relaxed mb-8 italic">{{ s.description|default:"Servicio de excelencia MD Chile." }}</p>
+                    
+                    <a href="{% url 'contact_view' %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-900 transition-colors shadow-lg shadow-blue-100">
+                        Solicitar Información
+                    </a>
                 </div>
             {% empty %}
-                <p class="col-span-3 text-gray-400 italic">No hay servicios activos. Revisa el Admin.</p>
+                <div class="col-span-3 py-20 border-2 border-dashed border-gray-100 rounded-[3rem]">
+                    <p class="text-gray-400 italic font-bold">No hay servicios activos actualmente. Revisa el panel de administración.</p>
+                </div>
             {% endfor %}
         </div>
     </div>

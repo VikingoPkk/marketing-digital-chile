@@ -4,13 +4,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    # 1. El timón del administrador
     path('admin/', admin.site.urls),
     
-    # 2. SISTEMA DE CUENTAS (ESTO SOLUCIONA EL ERROR 'account_logout')
-    path('accounts/', include('allauth.urls')),
-    
-    # 3. El mapa de la academia (conecta Dashboard, Cursos y Quizzes)
+    # Conexión con la academia
     path('', include('courses.urls')), 
+    
+    # Ruta temporal para evitar el error de 'contact_view'
+    path('contacto-temporal/', lambda r: HttpResponse("Pronto..."), name='contact_view'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

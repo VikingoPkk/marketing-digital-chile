@@ -8,13 +8,17 @@ from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
 
 # Modelos del sistema
-from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz
+from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
 from agency.models import Service 
 
 # 1. VISTAS DE NAVEGACIÓN Y AGENCIA
 def home(request):
     """Página de inicio de la plataforma."""
     return render(request, 'home.html')
+
+def contact_page(request):
+    """Muestra la página de contacto oficial de MD Chile."""
+    return render(request, 'contact.html')
 
 def services_list(request):
     """Muestra tus servicios reales desde la app Agency."""
@@ -49,10 +53,10 @@ def dashboard(request):
         'otros_cursos': otros_cursos
     })
 
-# 2. LÓGICA DE CURSOS Y CLASES
+# 2. LÓGICA DE CURSOS Y CONSULTAS
 @login_required
 def course_detail(request, course_id):
-    """Carga la lección actual y evita errores de ID."""
+    """Carga la lección actual y gestiona las dudas académicas."""
     course = get_object_or_404(Course, id=course_id)
     
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
@@ -61,103 +65,90 @@ def course_detail(request, course_id):
     lessons = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
     
     if not lessons.exists():
-        messages.warning(request, f"El curso '{course.title}' aún no tiene lecciones cargadas.")
+        messages.warning(request, f"El curso '{course.title}' aún no tiene lecciones.")
         return redirect('dashboard')
 
     lesson_id = request.GET.get('lesson')
-    if lesson_id:
-        current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
-    else:
-        current_lesson = lessons.first()
+    current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course) if lesson_id else lessons.first()
 
+    # Procesar envío de duda
+    if request.method == 'POST' and 'submit_query' in request.POST:
+        question_text = request.POST.get('question')
+        if question_text:
+            CourseQuery.objects.create(
+                user=request.user,
+                course=course,
+                lesson=current_lesson,
+                question=question_text
+            )
+            messages.success(request, "¡Tu duda ha sido enviada! Angelo te responderá pronto.")
+            return redirect(f"/course/{course.id}/?lesson={current_lesson.id}")
+
+    mis_dudas = CourseQuery.objects.filter(user=request.user, lesson=current_lesson).order_by('-created_at')
     total = lessons.count()
     completas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
     progreso = int((completas / total) * 100) if total > 0 else 0
 
     return render(request, 'courses/course_detail.html', {
-        'course': course,
-        'lessons': lessons,
-        'current_lesson': current_lesson,
-        'progreso_curso': progreso
+        'course': course, 'lessons': lessons, 'current_lesson': current_lesson,
+        'progreso_curso': progreso, 'mis_dudas': mis_dudas,
     })
 
 @login_required
 def toggle_lesson_completion(request, lesson_id):
     """Marca lección como completada."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    progress, created = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
+    progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
     progress.save()
     return redirect(f"/course/{lesson.module.course.id}/?lesson={lesson.id}")
 
 @login_required
 def enroll_trial(request, course_id):
-    """Inscripción rápida."""
     course = get_object_or_404(Course, id=course_id)
     Enrollment.objects.get_or_create(user=request.user, course=course)
     return redirect('dashboard')
 
 @login_required
 def checkout(request, course_id):
-    """Página de preventa."""
     course = get_object_or_404(Course, id=course_id)
     return render(request, 'courses/checkout.html', {'course': course})
 
-# --- SISTEMA DE EXÁMENES ---
 @login_required
 def take_quiz(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
     questions = quiz.questions.all()
-
     if request.method == 'POST':
         score = 0
         review_data = []
-        total_questions = questions.count()
-        
         for q in questions:
             ans = request.POST.get(f'question_{q.id}')
             is_correct = (int(ans) == q.correct_option) if ans else False
             if is_correct: score += 1
-
             review_data.append({
                 'question_text': q.text,
                 'user_answer_text': getattr(q, f'option{ans}') if ans else "Sin respuesta",
                 'correct_answer_text': getattr(q, f'option{q.correct_option}'),
                 'is_correct': is_correct
             })
-
-        percentage = (score / total_questions) * 100 if total_questions > 0 else 0
         request.session['quiz_result'] = {
-            'quiz_title': quiz.title,
-            'quiz_id': quiz.id,
-            'percentage': round(percentage, 1),
-            'course_id': quiz.module.course.id,
-            'review_data': review_data
+            'quiz_title': quiz.title, 'quiz_id': quiz.id,
+            'percentage': round((score / questions.count()) * 100, 1) if questions.count() > 0 else 0,
+            'course_id': quiz.module.course.id, 'review_data': review_data
         }
         return render(request, 'courses/quiz_result.html')
-
     return render(request, 'courses/quiz.html', {'quiz': quiz, 'questions': questions})
 
-# --- EDICIÓN DE PERFIL CORREGIDA ---
 @login_required
 def edit_profile(request):
-    """Procesa los cambios del perfil, incluyendo la foto."""
     if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name')
-        
-        # Guardar RUT y BIO solo si existen en tu modelo
-        if hasattr(user, 'rut'): user.rut = request.POST.get('rut')
-        if hasattr(user, 'bio'): user.bio = request.POST.get('bio')
-        
-        # Procesar la foto (buscamos 'avatar' para coincidir con tu HTML)
-        if 'avatar' in request.FILES:
-            user.profile_picture = request.FILES['avatar']
-            
-        user.save()
-        messages.success(request, "Perfil actualizado correctamente.")
+        request.user.first_name = request.POST.get('first_name')
+        if hasattr(request.user, 'rut'): request.user.rut = request.POST.get('rut')
+        if hasattr(request.user, 'bio'): request.user.bio = request.POST.get('bio')
+        if 'avatar' in request.FILES: request.user.profile_picture = request.FILES['avatar']
+        request.user.save()
+        messages.success(request, "Perfil actualizado.")
         return redirect('dashboard')
-        
     return render(request, 'account/edit_profile.html')
 
 # 3. SISTEMA DE DIPLOMAS
@@ -165,17 +156,11 @@ def edit_profile(request):
 def check_certificate(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     total_lessons = course.total_lessons
-    completed_lessons = LessonProgress.objects.filter(
-        user=request.user, 
-        lesson__module__course=course, 
-        is_completed=True
-    ).count()
-
-    if total_lessons > 0 and completed_lessons >= total_lessons:
-        cert, created = Certificate.objects.get_or_create(user=request.user, course=course)
+    completadas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
+    if total_lessons > 0 and completadas >= total_lessons:
+        cert, _ = Certificate.objects.get_or_create(user=request.user, course=course)
         return redirect('generate_diploma_pdf', certificate_id=cert.id)
-    
-    messages.warning(request, "Aún no has completado todas las lecciones.")
+    messages.warning(request, "Aún no terminas el curso.")
     return redirect('dashboard')
 
 @login_required
@@ -184,33 +169,10 @@ def generate_diploma_pdf(request, certificate_id):
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=landscape(A4))
     width, height = landscape(A4)
-    c.setStrokeColorRGB(0.1, 0.3, 0.8) 
-    c.setLineWidth(8)
-    c.rect(1*cm, 1*cm, width-2*cm, height-2*cm)
-    c.setStrokeColorRGB(0.8, 0.6, 0.2) 
-    c.setLineWidth(2)
-    c.rect(1.4*cm, 1.4*cm, width-2.8*cm, height-2.8*cm)
-    c.setFont("Helvetica-Bold", 45)
-    c.drawCentredString(width/2, height - 5*cm, "DIPLOMA DE FINALIZACIÓN")
-    c.setFont("Helvetica", 18)
-    c.drawCentredString(width/2, height - 7*cm, "ESTE CERTIFICADO SE OTORGA CON EXCELENCIA A:")
-    c.setFont("Helvetica-Bold", 35)
-    nombre = f"{request.user.first_name} {request.user.last_name}".upper()
-    if not request.user.first_name: nombre = request.user.username.upper()
-    c.drawCentredString(width/2, height/2 + 0.5*cm, nombre)
-    c.setFont("Helvetica", 16)
-    c.drawCentredString(width/2, height/2 - 2*cm, "Por haber cumplido con todos los requisitos académicos del curso:")
-    c.setFont("Helvetica-Bold", 22)
-    c.drawCentredString(width/2, height/2 - 3.5*cm, cert.course.title.upper())
-    c.setFont("Helvetica", 10)
-    c.drawString(2*cm, 3*cm, f"Fecha de emisión: {cert.issue_date.strftime('%d/%m/%Y')}")
-    c.drawRightString(width-2*cm, 3*cm, f"Código de Verificación: {cert.certificate_code}")
-    c.setFont("Times-BoldItalic", 15)
-    c.drawCentredString(width/2, 3.5*cm, "Angelo Vilche Huerta") 
-    c.line(width/2 - 3*cm, 3.8*cm, width/2 + 3*cm, 3.8*cm)
-    c.setFont("Helvetica", 10)
-    c.drawCentredString(width/2, 3*cm, "Director Académico MD Chile")
-    c.showPage()
-    c.save()
-    buffer.seek(0)
+    c.setStrokeColorRGB(0.1, 0.3, 0.8); c.setLineWidth(8); c.rect(1*cm, 1*cm, width-2*cm, height-2*cm)
+    c.setFont("Helvetica-Bold", 45); c.drawCentredString(width/2, height - 5*cm, "DIPLOMA DE FINALIZACIÓN")
+    nombre = f"{request.user.first_name} {request.user.last_name}".upper() if request.user.first_name else request.user.username.upper()
+    c.setFont("Helvetica-Bold", 35); c.drawCentredString(width/2, height/2 + 0.5*cm, nombre)
+    c.setFont("Helvetica-Bold", 22); c.drawCentredString(width/2, height/2 - 3.5*cm, cert.course.title.upper())
+    c.save(); buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'Diploma_{cert.course.slug}.pdf')

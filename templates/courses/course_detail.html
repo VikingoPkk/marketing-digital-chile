@@ -29,13 +29,13 @@
                         {% for lesson in module.lessons.all %}
                             <a href="?lesson={{ lesson.id }}" 
                                class="group flex items-center px-4 py-3 rounded-2xl transition-all duration-300 
-                               {% if request.GET.lesson == lesson.id|stringformat:'s' or not request.GET.lesson and forloop.parentloop.first and forloop.first %} 
+                               {% if current_lesson.id == lesson.id %} 
                                bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100 
                                {% else %} 
                                text-gray-500 hover:bg-gray-50 
                                {% endif %}">
                                 <span class="mr-3 text-lg">
-                                    {% if request.GET.lesson == lesson.id|stringformat:'s' %} 🎯 {% else %} 📖 {% endif %}
+                                    {% if current_lesson.id == lesson.id %} 🎯 {% else %} 📖 {% endif %}
                                 </span>
                                 <span class="text-[11px] font-bold uppercase tracking-tight">{{ lesson.title }}</span>
                             </a>
@@ -60,7 +60,7 @@
                 Duda Académica
             </button>
 
-            <a href="https://wa.me/TUNUMERODEWHATSAPP?text=Hola! Tengo una duda urgente sobre el curso {{ course.title }}" 
+            <a href="https://wa.me/569XXXXXXXX?text=Hola! Tengo una duda urgente sobre el curso {{ course.title }}" 
                target="_blank"
                class="flex items-center justify-center w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition transform hover:scale-105">
                 <span class="mr-2 text-base">💬</span>
@@ -72,78 +72,86 @@
     <div class="flex-1 p-6 md:p-12 overflow-y-auto">
         <div class="max-w-4xl mx-auto">
             
-            {% with current_lesson_id=request.GET.lesson|default:course.modules.first.lessons.first.id %}
-                {% for module in course.modules.all %}
-                    {% for lesson in module.lessons.all %}
-                        {% if lesson.id|stringformat:"s" == current_lesson_id|stringformat:"s" %}
+            <div class="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl mb-10 aspect-video ring-8 ring-white">
+                <iframe class="w-full h-full" 
+                        src="{{ current_lesson.video_url }}" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+            </div>
+
+            <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100 relative">
+                <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-6">
+                    <div class="space-y-1">
+                        <span class="text-blue-600 font-black text-[9px] uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                            {{ current_lesson.module.title }}
+                        </span>
+                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter leading-none italic uppercase">
+                            {{ current_lesson.title }}
+                        </h1>
+                    </div>
+                    
+                    <form action="{% url 'toggle_lesson_completion' current_lesson.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="group flex items-center bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-green-200 transition-all duration-300 transform hover:scale-105 uppercase text-[10px] tracking-widest">
+                            <span class="mr-2 group-hover:animate-bounce">✅</span>
+                            Completar Clase
+                        </button>
+                    </form>
+                </div>
+
+                <div class="prose prose-slate max-w-none text-gray-600 font-medium leading-relaxed">
+                    {{ current_lesson.content|linebreaks }}
+                </div>
+
+                {% if mis_dudas %}
+                <div class="mt-12 pt-10 border-t border-gray-100">
+                    <h3 class="text-sm font-black text-blue-900 uppercase italic mb-6">Tus Consultas en esta clase:</h3>
+                    <div class="space-y-4">
+                        {% for duda in mis_dudas %}
+                        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                            <p class="text-xs font-bold text-gray-400 uppercase mb-2">Pregunta:</p>
+                            <p class="text-gray-700 text-sm mb-4">{{ duda.question }}</p>
                             
-                            <div class="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl mb-10 aspect-video ring-8 ring-white">
-                                <iframe class="w-full h-full" 
-                                        src="{{ lesson.video_url }}" 
-                                        frameborder="0" 
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                        allowfullscreen></iframe>
+                            {% if duda.answer %}
+                            <div class="bg-blue-900 text-white p-4 rounded-xl shadow-lg">
+                                <p class="text-[9px] font-black uppercase text-blue-300 mb-1">Respuesta del Instructor:</p>
+                                <p class="text-xs italic">{{ duda.answer }}</p>
                             </div>
+                            {% else %}
+                            <span class="text-[9px] font-bold text-orange-500 uppercase tracking-widest animate-pulse">Pendiente de respuesta...</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
 
-                            <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100 relative">
-                                <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-6">
-                                    <div class="space-y-1">
-                                        <span class="text-blue-600 font-black text-[9px] uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
-                                            {{ module.title }}
-                                        </span>
-                                        <h1 class="text-4xl font-black text-gray-900 tracking-tighter leading-none italic uppercase">
-                                            {{ lesson.title }}
-                                        </h1>
-                                    </div>
-                                    
-                                    <form action="{% url 'toggle_lesson' lesson.id %}" method="POST">
-                                        {% csrf_token %}
-                                        <button type="submit" class="group flex items-center bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-green-200 transition-all duration-300 transform hover:scale-105 uppercase text-[10px] tracking-widest">
-                                            <span class="mr-2 group-hover:animate-bounce">✅</span>
-                                            Completar Clase
-                                        </button>
-                                    </form>
-                                </div>
-
-                                <div class="prose prose-slate max-w-none text-gray-600 font-medium leading-relaxed">
-                                    {{ lesson.content|linebreaks }}
-                                </div>
-                            </div>
-
-                            <div id="modal-duda" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-blue-900/40 backdrop-blur-md p-4">
-                                <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 transform transition-all animate-in zoom-in duration-300">
-                                    <div class="flex justify-between items-center mb-8">
-                                        <h3 class="text-2xl font-black text-blue-900 italic uppercase tracking-tighter">¿Cuál es tu duda?</h3>
-                                        <button onclick="document.getElementById('modal-duda').classList.add('hidden')" 
-                                                class="text-gray-400 hover:text-red-500 text-3xl font-black transition-colors">&times;</button>
-                                    </div>
-                                    
-                                    <form method="POST">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="lesson_id" value="{{ lesson.id }}">
-                                        
-                                        <div class="mb-6">
-                                            <label class="block text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2 ml-2">Tu mensaje para el profesor</label>
-                                            <textarea name="question" rows="5" required 
-                                                      placeholder="Describe aquí lo que no quedó claro de esta clase..." 
-                                                      class="w-full border-2 border-gray-100 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all resize-none"></textarea>
-                                        </div>
-                                        
-                                        <button type="submit" name="submit_query" 
-                                                class="w-full bg-blue-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-blue-800 transition-all transform active:scale-95">
-                                            Enviar Pregunta al Experto 🚀
-                                        </button>
-                                        <p class="text-[9px] text-center text-gray-400 mt-4 uppercase font-bold tracking-tight">
-                                            Un experto de MD Chile te responderá a la brevedad.
-                                        </p>
-                                    </form>
-                                </div>
-                            </div>
-
-                        {% endif %}
-                    {% endfor %}
-                {% endfor %}
-            {% endwith %}
+            <div id="modal-duda" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-blue-900/40 backdrop-blur-md p-4">
+                <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-10 transform transition-all animate-in zoom-in duration-300">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="text-2xl font-black text-blue-900 italic uppercase tracking-tighter">¿Cuál es tu duda?</h3>
+                        <button onclick="document.getElementById('modal-duda').classList.add('hidden')" 
+                                class="text-gray-400 hover:text-red-500 text-3xl font-black transition-colors">&times;</button>
+                    </div>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-6">
+                            <label class="block text-[10px] font-black uppercase text-gray-400 tracking-widest mb-2 ml-2">Tu mensaje para el profesor</label>
+                            <textarea name="question" rows="5" required 
+                                      placeholder="Describe aquí lo que no quedó claro de esta clase..." 
+                                      class="w-full border-2 border-gray-100 rounded-3xl p-5 text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-500 outline-none transition-all resize-none"></textarea>
+                        </div>
+                        
+                        <button type="submit" name="submit_query" 
+                                class="w-full bg-blue-900 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:bg-blue-800 transition-all transform active:scale-95">
+                            Enviar Pregunta al Experto 🚀
+                        </button>
+                    </form>
+                </div>
+            </div>
 
             <div class="mt-12 flex justify-between items-center bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
                 <a href="{% url 'dashboard' %}" class="text-blue-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center group">
@@ -166,5 +174,4 @@
         }
     }
 </script>
-
 {% endblock %}

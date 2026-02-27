@@ -94,7 +94,6 @@ class Question(models.Model):
 # --- BLOQUE 4: RECONOCIMIENTO (DIPLOMAS) ---
 
 class Certificate(models.Model):
-    """Modelo para registrar la finalización exitosa de un curso."""
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='certificates')
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     issue_date = models.DateTimeField(auto_now_add=True)
@@ -107,9 +106,25 @@ class Certificate(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.certificate_code:
-            # Genera un código único MDC (Marketing Digital Chile) + 8 caracteres aleatorios
             self.certificate_code = f"MDC-{uuid.uuid4().hex[:8].upper()}"
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Diploma {self.course.title} - {self.user.username}"
+
+# --- NUEVO BLOQUE 5: CONSULTAS ACADÉMICAS ---
+
+class CourseQuery(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Duda Académica"
+        verbose_name_plural = "Dudas Académicas"
+
+    def __str__(self):
+        return f"Duda de {self.user.username} en {self.lesson.title}"
