@@ -4,7 +4,9 @@ from . import views
 urlpatterns = [
     # 1. NAVEGACIÓN PRINCIPAL
     path('', views.home, name='home'),
-    path('servicios/', views.services_list, name='services_list'),
+    path('', views.home, name='home'),
+    # ESTA LÍNEA ES EL MOTOR:
+    path('servicios/', views.services_list, name='services_list'), 
     path('dashboard/', views.dashboard, name='dashboard'),
     path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('contacto/', views.contact_page, name='contact_view'),
@@ -22,4 +24,5 @@ urlpatterns = [
     # 4. SISTEMA DE DIPLOMAS MD CHILE
     path('verificar-certificado/<int:course_id>/', views.check_certificate, name='check_certificate'),
     path('descargar-diploma/<int:certificate_id>/', views.generate_diploma_pdf, name='generate_diploma_pdf'),
+
 ]

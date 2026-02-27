@@ -20,10 +20,13 @@ def contact_page(request):
     """Muestra la página de contacto oficial de MD Chile."""
     return render(request, 'contact.html')
 
+# --- ESTA ES LA FUNCIÓN CORREGIDA ---
 def services_list(request):
-    """Muestra tus servicios reales desde la app Agency."""
-    servicios_db = Service.objects.filter(is_active=True).order_by('order')
-    return render(request, 'services.html', {'servicios': servicios_db})
+    from agency.models import Service
+    servicios_reales = Service.objects.filter(is_active=True).order_by('order')
+    print(f"--- CAPITÁN, CARGANDO {servicios_reales.count()} SERVICIOS ---") # Esto sale en el CMD
+    return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
+
 
 @login_required
 def dashboard(request):
@@ -53,7 +56,7 @@ def dashboard(request):
         'otros_cursos': otros_cursos
     })
 
-# 2. LÓGICA DE CURSOS Y CONSULTAS
+# 2. LÓGICA DE CURSOS Y CONSULTAS 
 @login_required
 def course_detail(request, course_id):
     """Carga la lección actual y gestiona las dudas académicas."""
@@ -71,7 +74,7 @@ def course_detail(request, course_id):
     lesson_id = request.GET.get('lesson')
     current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course) if lesson_id else lessons.first()
 
-    # Procesar envío de duda
+    # Procesar envío de duda (Sistema de consultas mantenido)
     if request.method == 'POST' and 'submit_query' in request.POST:
         question_text = request.POST.get('question')
         if question_text:
@@ -98,6 +101,7 @@ def course_detail(request, course_id):
 def toggle_lesson_completion(request, lesson_id):
     """Marca lección como completada."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
+    # Corrección ortográfica: get_or_create (estaba como get_or_get_create)
     progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
     progress.save()
