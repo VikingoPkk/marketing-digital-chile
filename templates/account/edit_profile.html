@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen flex items-center justify-center">
+    <div class="max-w-lg w-full bg-white rounded-3xl shadow-2xl p-10 border border-gray-100">
+        
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-black text-gray-900 italic uppercase">Mi Perfil MD Chile</h2>
+            <p class="text-gray-500 font-medium text-sm">Actualiza tu información personal y foto de perfil</p>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="flex flex-col items-center mb-6">
+                <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-50 bg-gray-100 mb-2">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center text-3xl">👤</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Nombre Completo</label>
+                <input type="text" name="first_name" value="{{ user.first_name }}" 
+                       class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm"
+                       placeholder="Tu nombre">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">RUT (Facturación)</label>
+                <input type="text" name="rut" value="{{ user.rut|default:'' }}" 
+                       class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm"
+                       placeholder="12.345.678-9">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Sobre mí (Biografía)</label>
+                <textarea name="bio" rows="3"
+                          class="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm h-24 resize-none">{{ user.bio }}</textarea>
+            </div>
+
+            <div class="bg-blue-50 p-6 rounded-2xl border-2 border-dashed border-blue-200">
+                <label class="block text-sm font-bold text-blue-800 mb-3 uppercase tracking-tighter italic">Subir nueva foto</label>
+                <input type="file" name="avatar" accept="image/*"
+                       class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+            </div>
+
+            <div class="pt-4 space-y-3">
+                <button type="submit" 
+                        class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 hover:-translate-y-1 transition-all text-lg uppercase italic tracking-tighter">
+                    Guardar Cambios 💾
+                </button>
+                
+                <a href="{% url 'dashboard' %}" 
+                   class="block text-center text-gray-400 font-bold py-2 hover:text-blue-600 transition-colors uppercase text-xs tracking-widest">
+                    ← Volver al Panel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
