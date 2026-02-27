@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-white min-h-screen flex items-center justify-center py-20 px-6">
+    <div class="max-w-4xl w-full bg-gray-50 p-12 md:p-20 rounded-[4rem] border border-gray-100 shadow-2xl text-center relative overflow-hidden">
+        
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-100 rounded-full opacity-20"></div>
+
+        <div class="relative z-10">
+            <span class="text-7xl mb-8 block animate-bounce">🎁</span>
+            
+            <h1 class="text-4xl md:text-6xl font-black text-blue-900 mb-6 uppercase italic tracking-tighter">
+                ¡LOGRADO, {{ nombre_cliente|upper }}!
+            </h1>
+            
+            <p class="text-gray-500 text-lg font-medium mb-12 italic max-w-2xl mx-auto">
+                Tus datos han sido registrados con éxito. Como prometimos, aquí tienes el acceso exclusivo para potenciar tu estrategia de <strong>{{ service.title }}</strong>.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                {% if service.regalo_pdf %}
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col items-center">
+                    <div class="text-4xl mb-4 text-red-500">📄</div>
+                    <h3 class="font-black text-gray-900 uppercase italic mb-6">Guía Estratégica PDF</h3>
+                    <a href="{{ service.regalo_pdf.url }}" download class="w-full bg-red-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-red-800 transition-all shadow-lg shadow-red-100">
+                        Descargar Ahora
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if service.regalo_video_privado %}
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border border-gray-100 flex flex-col items-center">
+                    <div class="text-4xl mb-4 text-blue-500">🎥</div>
+                    <h3 class="font-black text-gray-900 uppercase italic mb-6">Masterclass Privada</h3>
+                    <a href="{{ service.regalo_video_privado }}" target="_blank" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg shadow-blue-100">
+                        Ver Video Online
+                    </a>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {% if not service.regalo_pdf and not service.regalo_video_privado %}
+            <div class="p-8 bg-yellow-50 rounded-3xl border border-yellow-100">
+                <p class="text-yellow-800 font-bold italic">Capitán, no has cargado regalos para este servicio en el Admin todavía.</p>
+            </div>
+            {% endif %}
+
+            <div class="mt-16 pt-12 border-t border-gray-200">
+                <a href="{% url 'services_list' %}" class="text-gray-400 font-black uppercase text-[10px] tracking-widest hover:text-blue-600 transition-colors">
+                    ← Volver a los servicios
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

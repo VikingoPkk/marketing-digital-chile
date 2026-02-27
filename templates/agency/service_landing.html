@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="bg-white min-h-screen">
+    <div class="relative h-[60vh] flex items-center justify-center overflow-hidden bg-blue-900">
+        {% if service.banner_image %}
+            <img src="{{ service.banner_image.url }}" alt="{{ service.title }}" class="absolute w-full h-full object-cover opacity-40">
+        {% endif %}
+        <div class="relative z-10 text-center px-6">
+            <span class="text-7xl mb-6 block drop-shadow-lg">{{ service.icon_emoji|default:"🚀" }}</span>
+            <h1 class="text-5xl md:text-7xl font-black text-white uppercase italic tracking-tighter drop-shadow-2xl">
+                {{ service.title }}
+            </h1>
+            <div class="mt-4 h-2 w-24 bg-blue-500 mx-auto rounded-full"></div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto py-20 px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            
+            <div class="space-y-12">
+                {% if service.video_url %}
+                <div class="aspect-video rounded-[3rem] overflow-hidden shadow-2xl border-4 border-gray-50 transform -rotate-1 hover:rotate-0 transition-transform duration-500">
+                    <iframe class="w-full h-full" src="{{ service.video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                {% endif %}
+
+                <div class="prose prose-blue max-w-none">
+                    <h2 class="text-3xl font-black text-blue-900 uppercase italic mb-6">¿Por qué elegir este servicio?</h2>
+                    <div class="text-gray-600 text-lg leading-relaxed italic font-medium">
+                        {{ service.long_description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="sticky top-10">
+                <div class="bg-gray-50 p-10 md:p-12 rounded-[4rem] border border-gray-100 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full -mr-16 -mt-16 opacity-50"></div>
+                    
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-black text-gray-900 mb-2 uppercase italic tracking-tighter">Reserva tu Consultoría</h3>
+                        <p class="text-blue-600 font-bold mb-8 uppercase text-[10px] tracking-widest italic">
+                            🎁 Incluye de regalo: {{ service.cta_regalo_text }}
+                        </p>
+
+                        <form method="POST" class="space-y-5">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-4">Nombre Completo</label>
+                                <input type="text" name="name" required class="w-full p-5 rounded-2xl bg-white border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="Ej: Jack Sparrow">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-4">Correo Electrónico</label>
+                                <input type="email" name="email" required class="w-full p-5 rounded-2xl bg-white border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="tu@email.com">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 ml-4">Cuéntanos tu proyecto</label>
+                                <textarea name="message" rows="4" class="w-full p-5 rounded-2xl bg-white border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all" placeholder="¿Cómo podemos ayudarte a escalar?"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 text-white py-6 rounded-2xl font-black uppercase tracking-[0.2em] hover:bg-blue-900 transition-all shadow-2xl shadow-blue-200 transform hover:-translate-y-1 active:scale-95">
+                                Enviar y obtener botín
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

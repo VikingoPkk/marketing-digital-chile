@@ -1,8 +1,8 @@
 from django.db import models
 from django.utils.text import slugify
 
-# Mantén tu modelo Service arriba...
 class Service(models.Model):
+    # --- TUS CAMPOS ORIGINALES ---
     title = models.CharField(max_length=200, verbose_name="Nombre del Servicio")
     slug = models.SlugField(unique=True, blank=True)
     icon_emoji = models.CharField(max_length=10, default="🚀")
@@ -13,6 +13,12 @@ class Service(models.Model):
     reels_links = models.TextField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
+
+    # --- AGREGADO: CAMPOS PARA LEAD MAGNET (EL REGALO) ---
+    # Estos campos permitirán que la página de gracias entregue el botín automáticamente
+    regalo_pdf = models.FileField(upload_to='leads/pdfs/', blank=True, null=True, verbose_name="Ebook o Guía PDF de Regalo")
+    regalo_video_privado = models.URLField(blank=True, null=True, verbose_name="URL Video Privado (YouTube/Vimeo)")
+    cta_regalo_text = models.CharField(max_length=100, default="¡Descargar mi regalo ahora!", verbose_name="Texto del Botón de Regalo")
 
     class Meta:
         ordering = ['order']
@@ -25,12 +31,28 @@ class Service(models.Model):
     def __str__(self):
         return self.title
 
-# NUEVO MODELO PARA CONTACTO (Asegúrate de la sangría aquí abajo)
 class ContactMessage(models.Model):
+    # --- TUS CAMPOS ORIGINALES ---
     name = models.CharField(max_length=100, verbose_name="Nombre")
     email = models.EmailField(verbose_name="Correo Electrónico")
     message = models.TextField(verbose_name="Mensaje o Consulta")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # --- AGREGADO: INTELIGENCIA DE CONVERSIÓN ---
+    # Para saber qué servicio específico generó el contacto en la landing
+    servicio_interes = models.ForeignKey(
+        Service, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        verbose_name="Servicio de Interés"
+    )
+    # Para identificar si el lead viene de Meta Suite u otro origen
+    lead_source = models.CharField(
+        max_length=100, 
+        default="Web Directa", 
+        verbose_name="Origen del Lead"
+    )
+
     def __str__(self):
-        return f"Mensaje de {self.name} - {self.email}"
+        return f"Lead: {self.name} - Interesado en: {self.servicio_interes}"

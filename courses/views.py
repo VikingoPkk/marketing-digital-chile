@@ -9,7 +9,7 @@ from reportlab.lib.units import cm
 
 # Modelos del sistema
 from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
-from agency.models import Service 
+from agency.models import Service, ContactMessage 
 
 # 1. VISTAS DE NAVEGACIÓN Y AGENCIA
 def home(request):
@@ -20,12 +20,40 @@ def contact_page(request):
     """Muestra la página de contacto oficial de MD Chile."""
     return render(request, 'contact.html')
 
-# --- ESTA ES LA FUNCIÓN CORREGIDA ---
 def services_list(request):
+    """Muestra la vitrina de servicios dinámicos."""
     from agency.models import Service
     servicios_reales = Service.objects.filter(is_active=True).order_by('order')
-    print(f"--- CAPITÁN, CARGANDO {servicios_reales.count()} SERVICIOS ---") # Esto sale en el CMD
+    print(f"--- CAPITÁN, CARGANDO {servicios_reales.count()} SERVICIOS ---")
     return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
+
+# --- NUEVA FUNCIÓN: LANDING PAGE INDIVIDUAL PROFESIONAL ---
+def service_detail(request, slug):
+    """Landing page individual con video, info extensa y captura de lead."""
+    service = get_object_or_404(Service, slug=slug, is_active=True)
+    
+    if request.method == 'POST':
+        nombre = request.POST.get('name')
+        email = request.POST.get('email')
+        mensaje = request.POST.get('message')
+        
+        if nombre and email:
+            # Guardamos al cliente en el Admin vinculado al servicio
+            ContactMessage.objects.create(
+                name=nombre,
+                email=email,
+                message=mensaje,
+                servicio_interes=service,
+                lead_source=f"Landing_{service.slug}"
+            )
+            
+            # Redirigimos a la página de Gracias con el regalo prometido
+            return render(request, 'agency/thanks_gift.html', {
+                'service': service,
+                'nombre_cliente': nombre
+            })
+
+    return render(request, 'agency/service_landing.html', {'service': service})
 
 
 @login_required
@@ -101,7 +129,6 @@ def course_detail(request, course_id):
 def toggle_lesson_completion(request, lesson_id):
     """Marca lección como completada."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
-    # Corrección ortográfica: get_or_create (estaba como get_or_get_create)
     progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
     progress.save()
