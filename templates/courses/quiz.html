@@ -10,11 +10,11 @@
     <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
         <div class="bg-blue-900 p-8 text-white">
             <h1 class="text-3xl font-black italic mb-2 uppercase">{{ quiz.title }}</h1>
-            <p class="text-blue-200">Responde con calma, tienes 35 minutos.</p>
+            <p class="text-blue-200">Responde con calma, el estándar de aprobación es 90%.</p>
         </div>
 
         <div class="p-8">
-            <form method="POST" id="quiz-form">
+            <form method="POST" id="quiz-form" onsubmit="return confirm('¿Estás seguro de que quieres finalizar el examen ahora? Revisa tus respuestas antes de enviar.');">
                 {% csrf_token %}
                 {% for question in quiz.questions.all %}
                 <div class="mb-10 p-6 bg-gray-50 rounded-2xl border border-gray-100">
@@ -44,7 +44,6 @@
 </div>
 
 <script>
-    // Configuración del tiempo: 35 minutos en segundos
     let timeLeft = 35 * 60; 
     const timerDisplay = document.getElementById('timer');
     const timerContainer = document.getElementById('timer-container');
@@ -54,13 +53,11 @@
         let minutes = Math.floor(timeLeft / 60);
         let seconds = timeLeft % 60;
 
-        // Formato 00:00
         seconds = seconds < 10 ? '0' + seconds : seconds;
         minutes = minutes < 10 ? '0' + minutes : minutes;
 
         timerDisplay.innerHTML = `${minutes}:${seconds}`;
 
-        // Alerta visual cuando queda menos de 5 minutos
         if (timeLeft <= 300) {
             timerContainer.classList.remove('border-blue-600');
             timerContainer.classList.add('border-red-600', 'animate-pulse');
@@ -70,7 +67,7 @@
         if (timeLeft <= 0) {
             clearInterval(countdown);
             alert("¡El tiempo se ha agotado! Tu examen se enviará automáticamente.");
-            quizForm.submit(); // Envío automático
+            quizForm.submit(); 
         }
         timeLeft--;
     }, 1000);
