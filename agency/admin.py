@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin # <-- HERRAMIENTA DE EXCEL
-from .models import Service, ContactMessage
+from .models import Service, ContactMessage, Project # <-- YA NO DARÁ ERROR
 
 # Registro para que aparezcan los Servicios
 @admin.register(Service)
@@ -9,6 +9,13 @@ class ServiceAdmin(admin.ModelAdmin):
     list_editable = ('order', 'is_active')
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ('title',)
+
+# Registro para que aparezcan los Proyectos (Software Desarrollado)
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('title', 'order', 'technologies')
+    list_editable = ('order',)
+    search_fields = ('title', 'technologies')
 
 # Registro para que aparezcan los Mensajes de Contacto (BLINDADO)
 @admin.register(ContactMessage)

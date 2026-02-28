@@ -1,0 +1,71 @@
+{% extends 'base.html' %}  {% load custom_filters %}  {% block content %}
+<div class="projects-wrapper">
+    <div class="header-section text-center">
+        <h1 class="main-title">NUESTROS PROYECTOS</h1>
+        <p class="subtitle">SOLUCIONES DIGITALES CON EL ESTÁNDAR EXPERTO DE MD CHILE</p>
+    </div>
+
+    <div class="projects-grid">
+        {% for proyecto in proyectos %}
+        <div class="project-card">
+            <div class="card-image">
+                {% if proyecto.image %}
+                <img src="{{ proyecto.image.url }}" alt="{{ proyecto.title }}">
+                {% else %}
+                <div class="placeholder-img" style="height:240px; display:flex; align-items:center; justify-content:center; background:#f1f1f1; font-size:3rem;">🚀</div>
+                {% endif %}
+            </div>
+            
+            <div class="card-content">
+                <h3 class="project-title">{{ proyecto.title|upper }}</h3>
+                
+                <div class="tech-container">
+                    {% if proyecto.technologies %}
+                        {% with proyecto.technologies|split:"," as techs %}
+                            {% for tech in techs %}
+                                <span class="tech-badge color-{{ forloop.counter0|modulo:5 }}">
+                                    {{ tech|trim|upper }}
+                                </span>
+                            {% endfor %}
+                        {% endwith %}
+                    {% endif %}
+                </div>
+
+                <p class="project-description">{{ proyecto.description }}</p>
+                
+                {% if proyecto.url_demo %}
+                <a href="{{ proyecto.url_demo }}" target="_blank" class="btn-md-chile">
+                    VER PROYECTO EN VIVO
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state text-center py-5">
+            <p>NUESTRA BODEGA DE SOFTWARE SE ESTÁ ACTUALIZANDO...</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .projects-wrapper { padding: 60px 20px; background: #fff; }
+    .header-section { margin-bottom: 50px; }
+    .main-title { font-size: 2.5rem; font-weight: 900; color: #1a2a44; margin: 0; }
+    .subtitle { color: #6c757d; font-weight: 500; letter-spacing: 2px; font-size: 0.8rem; margin-top: 5px; }
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 35px; max-width: 1200px; margin: 0 auto; }
+    .project-card { border-radius: 30px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.06); border: 1px solid #f0f0f0; transition: 0.4s; background: #fff; }
+    .project-card:hover { transform: translateY(-12px); box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
+    .card-image { height: 240px; overflow: hidden; }
+    .card-image img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .project-card:hover .card-image img { transform: scale(1.1); }
+    .card-content { padding: 30px; text-align: center; }
+    .project-title { font-size: 1.3rem; font-weight: 800; color: #1a2a44; margin-bottom: 15px; }
+    .tech-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+    .tech-badge { font-size: 0.65rem; font-weight: 800; padding: 5px 12px; border-radius: 50px; color: white; letter-spacing: 0.5px; }
+    .color-0 { background: #6366f1; } .color-1 { background: #ec4899; } .color-2 { background: #10b981; } .color-3 { background: #f59e0b; } .color-4 { background: #3b82f6; }
+    .project-description { color: #555; font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px; }
+    .btn-md-chile { display: inline-block; background: #2563eb; color: white !important; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.8rem; transition: 0.3s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2); }
+    .btn-md-chile:hover { background: #1d4ed8; transform: scale(1.03); }
+</style>
+{% endblock %}

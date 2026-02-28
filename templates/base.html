@@ -34,6 +34,9 @@
             <a href="{% url 'home' %}" class="hover:text-blue-600 transition">Inicio</a>
             <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition">Cursos</a>
             <a href="{% url 'services_list' %}" class="hover:text-blue-600 transition">Servicios</a>
+            <li class="nav-item">
+            <a class="nav-link {% if request.path == '/proyectos/' %}active{% endif %}" href="{% url 'projects_list' %}">PROYECTOS</a>
+            </li>
             <a href="{% url 'contact_view' %}" class="hover:text-blue-600 transition">Contacto</a>
         </div>
 

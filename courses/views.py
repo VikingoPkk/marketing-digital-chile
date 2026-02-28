@@ -5,15 +5,15 @@ from django.http import FileResponse, HttpResponse
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
-from django.template.loader import render_to_string # <-- NUEVO: Para diseño HTML
-from django.utils.html import strip_tags           # <-- NUEVO: Para versión texto plano
+from django.template.loader import render_to_string # Para diseño HTML
+from django.utils.html import strip_tags           # Para versión texto plano
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
 
 # Modelos del sistema
 from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
-from agency.models import Service, ContactMessage 
+from agency.models import Service, ContactMessage, Project # <-- IMPORTADO PROJECT
 
 # 1. VISTAS DE NAVEGACIÓN Y AGENCIA
 def home(request):
@@ -28,6 +28,11 @@ def services_list(request):
     """Muestra la vitrina de servicios dinámicos."""
     servicios_reales = Service.objects.filter(is_active=True).order_by('order')
     return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
+
+def projects_list(request):
+    """Muestra la galería de softwares desarrollados por la agencia."""
+    proyectos = Project.objects.all().order_by('order')
+    return render(request, 'agency/projects_list.html', {'proyectos': proyectos})
 
 # --- LANDING PAGE CON CORREO HTML PROFESIONAL ---
 def service_detail(request, slug):
@@ -60,9 +65,8 @@ def service_detail(request, slug):
                 'regalo_url': regalo_url
             }
             
-            # Renderizamos el template HTML que crearemos luego
             html_message = render_to_string('emails/welcome_lead.html', context)
-            plain_message = strip_tags(html_message) # Versión alternativa para apps viejas
+            plain_message = strip_tags(html_message)
             
             try:
                 send_mail(
@@ -70,13 +74,12 @@ def service_detail(request, slug):
                     plain_message,
                     settings.EMAIL_HOST_USER,
                     [email],
-                    html_message=html_message, # <--- DISPARO CON DISEÑO
+                    html_message=html_message,
                     fail_silently=False,
                 )
             except Exception as e:
                 print(f"Error enviando correo profesional: {e}")
             
-            # 4. Redirigir a la página de Gracias
             return render(request, 'agency/thanks_gift.html', {
                 'service': service,
                 'nombre_cliente': nombre
@@ -84,18 +87,16 @@ def service_detail(request, slug):
 
     return render(request, 'agency/service_landing.html', {'service': service})
 
-# --- NUEVO: DASHBOARD DE LEADS PARA ANGELO ---
+# --- DASHBOARD DE LEADS PARA ANGELO ---
 @login_required
 def leads_dashboard(request):
     """Vista exclusiva para que Angelo vea los prospectos capturados."""
-    # Seguridad: Solo staff (Angelo) puede entrar
     if not request.user.is_staff:
         messages.error(request, "No tienes permisos de Capitán para ver esta zona.")
         return redirect('dashboard')
         
     leads = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'agency/leads_admin.html', {'leads': leads})
-
 
 # 2. DASHBOARD Y PROGRESO DEL ALUMNO
 @login_required
@@ -128,7 +129,6 @@ def dashboard(request):
 
 @login_required
 def course_detail(request, course_id):
-    """Carga la lección actual y duda académica."""
     course = get_object_or_404(Course, id=course_id)
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
         return redirect('checkout', course_id=course.id)
@@ -162,7 +162,6 @@ def course_detail(request, course_id):
 
 @login_required
 def toggle_lesson_completion(request, lesson_id):
-    """Marca lección como completada."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
     progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
@@ -241,3 +240,9 @@ def generate_diploma_pdf(request, certificate_id):
     c.setFont("Helvetica-Bold", 22); c.drawCentredString(width/2, height/2 - 3.5*cm, cert.course.title.upper())
     c.save(); buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'Diploma_{cert.course.slug}.pdf')
+
+def projects_list(request):
+    """Muestra la galería de softwares desarrollados."""
+    # Buscamos todos los proyectos en la bodega
+    proyectos = Project.objects.all().order_by('order') 
+    return render(request, 'agency/projects_list.html', {'proyectos': proyectos})

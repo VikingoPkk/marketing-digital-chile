@@ -55,4 +55,23 @@ class ContactMessage(models.Model):
     )
 
     def __str__(self):
-        return f"Lead: {self.name} - Interesado en: {self.servicio_interes}"
+        return f"Lead: {self.name} - Interesado en: {self.servicio_interes}" 
+    
+    # agency/models.py
+from django.db import models
+
+class Project(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Título del Proyecto")
+    description = models.TextField(verbose_name="Descripción")
+    image = models.ImageField(upload_to='projects/', verbose_name="Imagen del Software")
+    url_demo = models.URLField(blank=True, null=True, verbose_name="Enlace Demo/Web")
+    technologies = models.CharField(max_length=200, verbose_name="Tecnologías usadas")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden")
+
+    class Meta:
+        verbose_name = "Proyecto"
+        verbose_name_plural = "Proyectos"
+        ordering = ['order']
+
+    def __str__(self):
+        return self.title

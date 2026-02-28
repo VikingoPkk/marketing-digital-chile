@@ -5,15 +5,13 @@ urlpatterns = [
     # --- NAVEGACIÓN PRINCIPAL ---
     path('', views.home, name='home'),
     path('contacto/', views.contact_page, name='contact_view'),
+    path('proyectos/', views.projects_list, name='projects_list'), # <-- NUEVA RUTA
     
     # --- SISTEMA DE SERVICIOS Y LANDINGS (META SUITE) ---
-    # Vitrina general de servicios
     path('servicios/', views.services_list, name='services_list'),
-    # Landing Page individual por SLUG (Para tus campañas)
     path('servicios/<slug:slug>/', views.service_detail, name='service_detail'),
     
     # --- DASHBOARD DE AGENCIA (NUEVO) ---
-    # Centro de mando para que Angelo vea sus prospectos/leads
     path('prospectos-agencia/', views.leads_dashboard, name='leads_dashboard'),
     
     # --- SISTEMA DE ACADEMIA (DASHBOARD Y CURSOS) ---
