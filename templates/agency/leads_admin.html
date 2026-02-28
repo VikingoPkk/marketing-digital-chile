@@ -1,47 +1,29 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-<div class="container mt-4">
-    <h2 class="mb-4">🚢 Panel de Control: Leads MD Chile</h2>
-    <table class="table table-striped table-hover border">
-        <thead class="table-dark">
-            <tr>
-                <th>Fecha</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Servicio</th>
-                <th>Mensaje</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for lead in leads %}
-            <tr>
-                <td>{{ lead.created_at|date:"d/m/Y H:i" }}</td>
-                <td><strong>{{ lead.name }}</strong></td>
-                <td>{{ lead.email }}</td>
-                <td><span class="badge bg-primary">{{ lead.servicio_interes.title }}</span></td>
-                <td><small>{{ lead.message }}</small></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary">🚢 Panel de Control: Prospectos MD Chile</h2>
-        <span class="badge bg-success">{{ leads.count }} Leads Capturados</span>
+        <div>
+            <h2 class="text-primary mb-0">🚢 Panel de Control: Prospectos MD Chile</h2>
+            <p class="text-muted">Centro de mando para la gestión de leads de la agencia</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="badge bg-success fs-6">{{ leads.count }} Leads Capturados</span>
+            <a href="/admin/agency/contactmessage/" class="btn btn-outline-secondary shadow-sm">
+                ⬅️ Volver al Admin
+            </a>
+        </div>
     </div>
 
-    <div class="card shadow">
-        <div class="card-body">
+    <div class="card shadow border-0">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th>Fecha</th>
+                            <th class="ps-4">Fecha</th>
                             <th>Nombre</th>
                             <th>Email</th>
                             <th>Servicio de Interés</th>
@@ -51,15 +33,33 @@
                     <tbody>
                         {% for lead in leads %}
                         <tr>
-                            <td>{{ lead.created_at|date:"d/m/Y H:i" }}</td>
-                            <td><strong>{{ lead.name }}</strong></td>
-                            <td><a href="mailto:{{ lead.email }}">{{ lead.email }}</a></td>
-                            <td><span class="badge bg-info text-dark">{{ lead.servicio_interes.title }}</span></td>
-                            <td><small class="text-muted">{{ lead.message|truncatechars:50 }}</small></td>
+                            <td class="ps-4 text-nowrap">
+                                <span class="text-muted small">{{ lead.created_at|date:"d/m/Y" }}</span><br>
+                                <strong>{{ lead.created_at|date:"H:i" }}</strong>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ lead.name }}</div>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ lead.email }}" class="text-decoration-none">{{ lead.email }}</a>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-info text-dark">
+                                    {{ lead.servicio_interes.title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-muted" style="max-width: 300px;">
+                                    {{ lead.message|truncatechars:60|default:"Sin mensaje adicional" }}
+                                </div>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Aún no hay leads capturados. ¡A lanzar campañas!</td>
+                            <td colspan="5" class="text-center text-muted py-5">
+                                <div class="mb-2">📭</div>
+                                Aún no hay leads capturados. ¡Es hora de lanzar las campañas en Meta!
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -68,4 +68,10 @@
         </div>
     </div>
 </div>
+
+<style>
+    .card { border-radius: 12px; overflow: hidden; }
+    .table thead th { font-weight: 500; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+    .btn-outline-secondary:hover { background-color: #f8f9fa; color: #6c757d; border-color: #6c757d; }
+</style>
 {% endblock %}
