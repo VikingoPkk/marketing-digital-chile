@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        .button {
+            background-color: #007bff;
+            color: white !important;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 20px auto; border: 1px solid #ddd; border-top: 5px solid #007bff; padding: 20px; border-radius: 8px;">
+        <h1 style="color: #007bff; margin-top: 0;">¡Hola, {{ nombre }}! 🎁</h1>
+        <p>Gracias por confiar en <strong>Marketing Digital Chile</strong>.</p>
+        <p>Tal como prometimos, aquí tienes el acceso a tu material sobre <strong>{{ servicio.title }}</strong> para que empieces hoy mismo:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ regalo_url }}" class="button">DESCARGAR MI REGALO</a>
+        </div>
+        
+        <p>Si tienes alguna duda o quieres escalar tu proyecto con nosotros, solo responde a este correo.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #777; text-align: center;">
+            <strong>Agencia Marketing Digital Chile</strong><br>
+            Santiago, Chile.
+        </p>
+    </div>
+</body>
+</html>

@@ -12,6 +12,10 @@ urlpatterns = [
     # Landing Page individual por SLUG (Para tus campañas)
     path('servicios/<slug:slug>/', views.service_detail, name='service_detail'),
     
+    # --- DASHBOARD DE AGENCIA (NUEVO) ---
+    # Centro de mando para que Angelo vea sus prospectos/leads
+    path('prospectos-agencia/', views.leads_dashboard, name='leads_dashboard'),
+    
     # --- SISTEMA DE ACADEMIA (DASHBOARD Y CURSOS) ---
     path('dashboard/', views.dashboard, name='dashboard'),
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
@@ -19,7 +23,6 @@ urlpatterns = [
     path('checkout/<int:course_id>/', views.checkout, name='checkout'),
     
     # --- LECCIONES Y PROGRESO ---
-    # CORRECCIÓN AQUÍ: El nombre debe ser 'toggle_lesson_completion' para que el HTML lo encuentre
     path('toggle-lesson/<int:lesson_id>/', views.toggle_lesson_completion, name='toggle_lesson_completion'),
     
     # --- EXÁMENES Y PERFIL ---

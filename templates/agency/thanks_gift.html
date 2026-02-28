@@ -55,4 +55,12 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock %} 
+
+<script>
+  // Avisamos a Meta que un nuevo cliente se registró con éxito
+  fbq('track', 'Lead', {
+    content_name: '{{ service.title }}',
+    status: 'success'
+  });
+</script>

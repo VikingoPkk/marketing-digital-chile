@@ -79,12 +79,11 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# --- CONFIGURACIÓN DE ALLAUTH (CORREGIDA) ---
+# --- CONFIGURACIÓN DE ALLAUTH ---
 SITE_ID = 1
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-# Se usa password1 para evitar el error crítico del PowerShell
 ACCOUNT_SIGNUP_FIELDS = ['email', 'password1'] 
 ACCOUNT_EMAIL_VERIFICATION = 'none' 
 
@@ -99,7 +98,6 @@ USE_TZ = True
 
 # Estáticos y Media
 STATIC_URL = 'static/'
-# Crea una carpeta llamada 'static' en la raíz para que este aviso desaparezca
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
@@ -110,3 +108,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Permite que el navegador renderice iframes correctamente
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# --- CONFIGURACIÓN DE ENVÍO DE CORREOS (NUEVO) ---
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_CHARSET = 'utf-8'
+EMAIL_HOST_USER = 'oncocit2@gmail.com'  # Cambiar por el correo de MD Chile
+EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy' # Cambiar por contraseña de aplicación 

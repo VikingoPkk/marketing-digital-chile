@@ -3,6 +3,10 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponse
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.template.loader import render_to_string # <-- NUEVO: Para diseño HTML
+from django.utils.html import strip_tags           # <-- NUEVO: Para versión texto plano
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
@@ -22,14 +26,12 @@ def contact_page(request):
 
 def services_list(request):
     """Muestra la vitrina de servicios dinámicos."""
-    from agency.models import Service
     servicios_reales = Service.objects.filter(is_active=True).order_by('order')
-    print(f"--- CAPITÁN, CARGANDO {servicios_reales.count()} SERVICIOS ---")
     return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
 
-# --- NUEVA FUNCIÓN: LANDING PAGE INDIVIDUAL PROFESIONAL ---
+# --- LANDING PAGE CON CORREO HTML PROFESIONAL ---
 def service_detail(request, slug):
-    """Landing page individual con video, info extensa y captura de lead."""
+    """Landing page individual con captura de lead y envío de regalo con diseño HTML."""
     service = get_object_or_404(Service, slug=slug, is_active=True)
     
     if request.method == 'POST':
@@ -38,7 +40,7 @@ def service_detail(request, slug):
         mensaje = request.POST.get('message')
         
         if nombre and email:
-            # Guardamos al cliente en el Admin vinculado al servicio
+            # 1. Guardar el Lead en la base de datos
             ContactMessage.objects.create(
                 name=nombre,
                 email=email,
@@ -47,7 +49,34 @@ def service_detail(request, slug):
                 lead_source=f"Landing_{service.slug}"
             )
             
-            # Redirigimos a la página de Gracias con el regalo prometido
+            # 2. Construir link del regalo (PDF o Video)
+            regalo_url = request.build_absolute_uri(service.regalo_pdf.url) if service.regalo_pdf else service.regalo_video_privado
+            
+            # 3. Preparar el Correo con Diseño HTML
+            asunto = f"🎁 ¡Aquí tienes tu regalo de MD Chile: {service.title}!"
+            context = {
+                'nombre': nombre,
+                'servicio': service,
+                'regalo_url': regalo_url
+            }
+            
+            # Renderizamos el template HTML que crearemos luego
+            html_message = render_to_string('emails/welcome_lead.html', context)
+            plain_message = strip_tags(html_message) # Versión alternativa para apps viejas
+            
+            try:
+                send_mail(
+                    asunto,
+                    plain_message,
+                    settings.EMAIL_HOST_USER,
+                    [email],
+                    html_message=html_message, # <--- DISPARO CON DISEÑO
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(f"Error enviando correo profesional: {e}")
+            
+            # 4. Redirigir a la página de Gracias
             return render(request, 'agency/thanks_gift.html', {
                 'service': service,
                 'nombre_cliente': nombre
@@ -55,7 +84,20 @@ def service_detail(request, slug):
 
     return render(request, 'agency/service_landing.html', {'service': service})
 
+# --- NUEVO: DASHBOARD DE LEADS PARA ANGELO ---
+@login_required
+def leads_dashboard(request):
+    """Vista exclusiva para que Angelo vea los prospectos capturados."""
+    # Seguridad: Solo staff (Angelo) puede entrar
+    if not request.user.is_staff:
+        messages.error(request, "No tienes permisos de Capitán para ver esta zona.")
+        return redirect('dashboard')
+        
+    leads = ContactMessage.objects.all().order_by('-created_at')
+    return render(request, 'agency/leads_admin.html', {'leads': leads})
 
+
+# 2. DASHBOARD Y PROGRESO DEL ALUMNO
 @login_required
 def dashboard(request):
     """Panel del alumno con progreso real de cursos."""
@@ -84,17 +126,14 @@ def dashboard(request):
         'otros_cursos': otros_cursos
     })
 
-# 2. LÓGICA DE CURSOS Y CONSULTAS 
 @login_required
 def course_detail(request, course_id):
-    """Carga la lección actual y gestiona las dudas académicas."""
+    """Carga la lección actual y duda académica."""
     course = get_object_or_404(Course, id=course_id)
-    
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
         return redirect('checkout', course_id=course.id)
 
     lessons = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
-    
     if not lessons.exists():
         messages.warning(request, f"El curso '{course.title}' aún no tiene lecciones.")
         return redirect('dashboard')
@@ -102,17 +141,13 @@ def course_detail(request, course_id):
     lesson_id = request.GET.get('lesson')
     current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course) if lesson_id else lessons.first()
 
-    # Procesar envío de duda (Sistema de consultas mantenido)
     if request.method == 'POST' and 'submit_query' in request.POST:
         question_text = request.POST.get('question')
         if question_text:
             CourseQuery.objects.create(
-                user=request.user,
-                course=course,
-                lesson=current_lesson,
-                question=question_text
+                user=request.user, course=course, lesson=current_lesson, question=question_text
             )
-            messages.success(request, "¡Tu duda ha sido enviada! Angelo te responderá pronto.")
+            messages.success(request, "¡Tu duda ha sido enviada!")
             return redirect(f"/course/{course.id}/?lesson={current_lesson.id}")
 
     mis_dudas = CourseQuery.objects.filter(user=request.user, lesson=current_lesson).order_by('-created_at')
@@ -182,7 +217,6 @@ def edit_profile(request):
         return redirect('dashboard')
     return render(request, 'account/edit_profile.html')
 
-# 3. SISTEMA DE DIPLOMAS
 @login_required
 def check_certificate(request, course_id):
     course = get_object_or_404(Course, id=course_id)
