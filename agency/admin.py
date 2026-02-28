@@ -1,4 +1,5 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin # <-- HERRAMIENTA DE EXCEL
 from .models import Service, ContactMessage
 
 # Registro para que aparezcan los Servicios
@@ -9,9 +10,9 @@ class ServiceAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     search_fields = ('title',)
 
-# Registro para que aparezcan los Mensajes de Contacto
+# Registro para que aparezcan los Mensajes de Contacto (BLINDADO)
 @admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
+class ContactMessageAdmin(ImportExportModelAdmin): 
     # Agregamos campos adicionales para que Angelo tenga más contexto rápido
     list_display = ('name', 'email', 'servicio_interes', 'created_at')
     readonly_fields = ('created_at',)
@@ -19,5 +20,4 @@ class ContactMessageAdmin(admin.ModelAdmin):
     list_filter = ('servicio_interes', 'created_at')
 
     # --- INTEGRACIÓN DEL DASHBOARD PROFESIONAL ---
-    # Esto busca el archivo HTML que crearemos para poner el botón azul
     change_list_template = "admin/agency/contactmessage/change_list.html"

@@ -19,8 +19,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites', 
 
-    'agency',  # <-- AGREGADA COMA AQUÍ (Evita el error agencyusers)
-    'users',   # <-- AGREGADA COMA AQUÍ
+    'import_export', # <-- ARTILLERÍA DE EXPORTACIÓN
+    'agency',  
+    'users',   
     'courses',
 
     'allauth',
@@ -51,8 +52,8 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+                'django.contrib.auth.context_processors.auth', # <-- REPARADO
+                'django.contrib.messages.context_processors.messages', # <-- REPARADO
             ],
         },
     },
@@ -60,6 +61,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'marketing_digital.wsgi.application'
 
+# --- BASE DE DATOS SIN DUPLICADOS ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -109,11 +111,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Permite que el navegador renderice iframes correctamente
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# --- CONFIGURACIÓN DE ENVÍO DE CORREOS (NUEVO) ---
+# --- CONFIGURACIÓN DE ENVÍO DE CORREOS ---
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_CHARSET = 'utf-8'
-EMAIL_HOST_USER = 'oncocit2@gmail.com'  # Cambiar por el correo de MD Chile
-EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy' # Cambiar por contraseña de aplicación 
+EMAIL_HOST_USER = 'oncocit2@gmail.com'
+EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy'
