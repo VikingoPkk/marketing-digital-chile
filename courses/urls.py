@@ -19,7 +19,8 @@ urlpatterns = [
     path('checkout/<int:course_id>/', views.checkout, name='checkout'),
     
     # --- LECCIONES Y PROGRESO ---
-    path('toggle-lesson/<int:lesson_id>/', views.toggle_lesson_completion, name='toggle_lesson'),
+    # CORRECCIÓN AQUÍ: El nombre debe ser 'toggle_lesson_completion' para que el HTML lo encuentre
+    path('toggle-lesson/<int:lesson_id>/', views.toggle_lesson_completion, name='toggle_lesson_completion'),
     
     # --- EXÁMENES Y PERFIL ---
     path('quiz/<int:quiz_id>/', views.take_quiz, name='take_quiz'),
