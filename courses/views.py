@@ -13,15 +13,39 @@ from reportlab.lib.units import cm
 
 # Modelos del sistema
 from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
-from agency.models import Service, ContactMessage, Project # <-- IMPORTADO PROJECT
+from agency.models import Service, ContactMessage, Project, HomeSection, ClientLogo, UserTestimonial, HomeReel
 
-# 1. VISTAS DE NAVEGACIÓN Y AGENCIA
+# ==========================================
+# 1. VISTAS DE NAVEGACIÓN Y AGENCIA DINÁMICA
+# ==========================================
+
+# ... (mantenga todos sus imports arriba) ...
+
 def home(request):
-    """Página de inicio de la plataforma."""
-    return render(request, 'home.html')
+    """Página de inicio modular de lujo controlada por Angelo."""
+    # Cargamos solo las piezas que Angelo marcó como ACTIVO en el Admin
+    secciones = HomeSection.objects.filter(is_active=True).order_by('order')
+    
+    # Traemos el botín de cada almacén para alimentar el Home dinámico
+    reels = HomeReel.objects.filter(is_active=True)[:4] # Máximo 4 para mantener el diseño limpio
+    logos = ClientLogo.objects.all()
+    testimonios = UserTestimonial.objects.all()
+    servicios = Service.objects.filter(is_active=True).order_by('order')[:3]
+    proyectos = Project.objects.all().order_by('order')[:3]
+
+    return render(request, 'home.html', {
+        'secciones': secciones,
+        'reels': reels,
+        'logos': logos,
+        'testimonios': testimonios,
+        'servicios': servicios,
+        'proyectos': proyectos
+    })
+
+# ... (mantenga todas las demás vistas de cursos y certificados abajo) ...
 
 def contact_page(request):
-    """Muestra la página de contacto oficial de MD Chile."""
+    """Muestra la página de contacto oficial."""
     return render(request, 'contact.html')
 
 def services_list(request):
@@ -30,13 +54,13 @@ def services_list(request):
     return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
 
 def projects_list(request):
-    """Muestra la galería de softwares desarrollados por la agencia."""
-    proyectos = Project.objects.all().order_by('order')
+    """Muestra la galería de softwares desarrollados."""
+    proyectos = Project.objects.all().order_by('order') 
     return render(request, 'agency/projects_list.html', {'proyectos': proyectos})
 
 # --- LANDING PAGE CON CORREO HTML PROFESIONAL ---
 def service_detail(request, slug):
-    """Landing page individual con captura de lead y envío de regalo con diseño HTML."""
+    """Landing page individual con captura de lead y envío de regalo."""
     service = get_object_or_404(Service, slug=slug, is_active=True)
     
     if request.method == 'POST':
@@ -54,7 +78,7 @@ def service_detail(request, slug):
                 lead_source=f"Landing_{service.slug}"
             )
             
-            # 2. Construir link del regalo (PDF o Video)
+            # 2. Construir link del regalo
             regalo_url = request.build_absolute_uri(service.regalo_pdf.url) if service.regalo_pdf else service.regalo_video_privado
             
             # 3. Preparar el Correo con Diseño HTML
@@ -98,7 +122,10 @@ def leads_dashboard(request):
     leads = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'agency/leads_admin.html', {'leads': leads})
 
+# ==========================================
 # 2. DASHBOARD Y PROGRESO DEL ALUMNO
+# ==========================================
+
 @login_required
 def dashboard(request):
     """Panel del alumno con progreso real de cursos."""
@@ -129,6 +156,7 @@ def dashboard(request):
 
 @login_required
 def course_detail(request, course_id):
+    """Carga la lección actual y duda académica."""
     course = get_object_or_404(Course, id=course_id)
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
         return redirect('checkout', course_id=course.id)
@@ -162,6 +190,7 @@ def course_detail(request, course_id):
 
 @login_required
 def toggle_lesson_completion(request, lesson_id):
+    """Marca lección como completada."""
     lesson = get_object_or_404(Lesson, id=lesson_id)
     progress, _ = LessonProgress.objects.get_or_create(user=request.user, lesson=lesson)
     progress.is_completed = not progress.is_completed
@@ -181,6 +210,7 @@ def checkout(request, course_id):
 
 @login_required
 def take_quiz(request, quiz_id):
+    """Sistema de exámenes dinámicos."""
     quiz = get_object_or_404(Quiz, id=quiz_id)
     questions = quiz.questions.all()
     if request.method == 'POST':
@@ -206,6 +236,7 @@ def take_quiz(request, quiz_id):
 
 @login_required
 def edit_profile(request):
+    """Gestión de perfil del alumno."""
     if request.method == 'POST':
         request.user.first_name = request.POST.get('first_name')
         if hasattr(request.user, 'rut'): request.user.rut = request.POST.get('rut')
@@ -218,6 +249,7 @@ def edit_profile(request):
 
 @login_required
 def check_certificate(request, course_id):
+    """Valida si el alumno puede generar su diploma."""
     course = get_object_or_404(Course, id=course_id)
     total_lessons = course.total_lessons
     completadas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
@@ -229,6 +261,7 @@ def check_certificate(request, course_id):
 
 @login_required
 def generate_diploma_pdf(request, certificate_id):
+    """Generación de PDF con ReportLab."""
     cert = get_object_or_404(Certificate, id=certificate_id, user=request.user)
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=landscape(A4))
@@ -241,8 +274,4 @@ def generate_diploma_pdf(request, certificate_id):
     c.save(); buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'Diploma_{cert.course.slug}.pdf')
 
-def projects_list(request):
-    """Muestra la galería de softwares desarrollados."""
-    # Buscamos todos los proyectos en la bodega
-    proyectos = Project.objects.all().order_by('order') 
-    return render(request, 'agency/projects_list.html', {'proyectos': proyectos})
+# ... (mantenga todos sus imports arriba) ...

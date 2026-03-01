@@ -1,8 +1,58 @@
 from django.db import models
 from django.utils.text import slugify
 
+# --- 1. ESTRUCTURA MODULAR DEL HOME ---
+class HomeSection(models.Model):
+    SECTION_TYPES = (
+        ('hero', 'Sección Principal (Hero)'),
+        ('reels', 'Sección de Reels/Videos'),
+        ('clients', 'Logos de Clientes'),
+        ('testimonials', 'Testimonios de Usuarios'),
+        ('services_preview', 'Resumen de Servicios'),
+    )
+    title = models.CharField(max_length=200, verbose_name="Texto/Subtítulo de la sección")
+    section_type = models.CharField(max_length=20, choices=SECTION_TYPES, unique=True)
+    is_active = models.BooleanField(default=True, verbose_name="¿Mostrar en el Home?")
+    order = models.PositiveIntegerField(default=0, verbose_name="Orden de aparición")
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Estructura del Home"
+        verbose_name_plural = "Estructura del Home"
+
+    def __str__(self):
+        return f"{self.get_section_type_display()} - {self.title}"
+
+# --- 2. CONTENIDO EDITABLE DEL HOME ---
+class HomeReel(models.Model):
+    title = models.CharField(max_length=100, verbose_name="Título del Reel")
+    video_url = models.URLField(verbose_name="Link del Video (Instagram/TikTok/YouTube)")
+    thumbnail = models.ImageField(upload_to='reels/thumbs/', verbose_name="Portada del Reel")
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+
+# Busque el modelo ClientLogo y actualícelo así:
+class ClientLogo(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Nombre de la Empresa")
+    logo = models.ImageField(upload_to='clients/', verbose_name="Foto/Logo del Cliente")
+    url_web = models.URLField(blank=True, null=True, verbose_name="Enlace a su sitio web") # 👈 Nuevo campo
+    
+    def __str__(self):
+        return self.name
+
+class UserTestimonial(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Nombre del Cliente")
+    comment = models.TextField(verbose_name="Testimonio")
+    avatar = models.ImageField(upload_to='testimonials/', blank=True, null=True, verbose_name="Foto")
+    rating = models.IntegerField(default=5, choices=[(i, i) for i in range(1, 6)], verbose_name="Estrellas")
+
+    def __str__(self):
+        return f"Testimonio de {self.name}"
+
+# --- 3. SERVICIOS, PROYECTOS Y LEADS ---
 class Service(models.Model):
-    # --- TUS CAMPOS ORIGINALES ---
     title = models.CharField(max_length=200, verbose_name="Nombre del Servicio")
     slug = models.SlugField(unique=True, blank=True)
     icon_emoji = models.CharField(max_length=10, default="🚀")
@@ -13,12 +63,9 @@ class Service(models.Model):
     reels_links = models.TextField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
-
-    # --- AGREGADO: CAMPOS PARA LEAD MAGNET (EL REGALO) ---
-    # Estos campos permitirán que la página de gracias entregue el botín automáticamente
-    regalo_pdf = models.FileField(upload_to='leads/pdfs/', blank=True, null=True, verbose_name="Ebook o Guía PDF de Regalo")
-    regalo_video_privado = models.URLField(blank=True, null=True, verbose_name="URL Video Privado (YouTube/Vimeo)")
-    cta_regalo_text = models.CharField(max_length=100, default="¡Descargar mi regalo ahora!", verbose_name="Texto del Botón de Regalo")
+    regalo_pdf = models.FileField(upload_to='leads/pdfs/', blank=True, null=True, verbose_name="Ebook PDF de Regalo")
+    regalo_video_privado = models.URLField(blank=True, null=True, verbose_name="URL Video Privado")
+    cta_regalo_text = models.CharField(max_length=100, default="¡Descargar mi regalo ahora!", verbose_name="Texto del Botón")
 
     class Meta:
         ordering = ['order']
@@ -32,46 +79,27 @@ class Service(models.Model):
         return self.title
 
 class ContactMessage(models.Model):
-    # --- TUS CAMPOS ORIGINALES ---
     name = models.CharField(max_length=100, verbose_name="Nombre")
     email = models.EmailField(verbose_name="Correo Electrónico")
-    message = models.TextField(verbose_name="Mensaje o Consulta")
+    message = models.TextField(verbose_name="Mensaje")
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # --- AGREGADO: INTELIGENCIA DE CONVERSIÓN ---
-    # Para saber qué servicio específico generó el contacto en la landing
-    servicio_interes = models.ForeignKey(
-        Service, 
-        on_delete=models.SET_NULL, 
-        null=True, 
-        blank=True, 
-        verbose_name="Servicio de Interés"
-    )
-    # Para identificar si el lead viene de Meta Suite u otro origen
-    lead_source = models.CharField(
-        max_length=100, 
-        default="Web Directa", 
-        verbose_name="Origen del Lead"
-    )
+    servicio_interes = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True)
+    lead_source = models.CharField(max_length=100, default="Web Directa")
 
     def __str__(self):
-        return f"Lead: {self.name} - Interesado en: {self.servicio_interes}" 
-    
-    # agency/models.py
-from django.db import models
+        return f"Lead: {self.name}"
 
 class Project(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Título del Proyecto")
-    description = models.TextField(verbose_name="Descripción")
-    image = models.ImageField(upload_to='projects/', verbose_name="Imagen del Software")
-    url_demo = models.URLField(blank=True, null=True, verbose_name="Enlace Demo/Web")
-    technologies = models.CharField(max_length=200, verbose_name="Tecnologías usadas")
-    order = models.PositiveIntegerField(default=0, verbose_name="Orden")
+    title = models.CharField(max_length=200, verbose_name="Título")
+    description = models.TextField()
+    image = models.ImageField(upload_to='projects/')
+    url_demo = models.URLField(blank=True, null=True)
+    technologies = models.CharField(max_length=200)
+    order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        verbose_name = "Proyecto"
-        verbose_name_plural = "Proyectos"
         ordering = ['order']
+        verbose_name_plural = "Proyectos"
 
     def __str__(self):
         return self.title

@@ -1,30 +1,34 @@
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin # <-- HERRAMIENTA DE EXCEL
-from .models import Service, ContactMessage, Project # <-- YA NO DARÁ ERROR
+from import_export.admin import ImportExportModelAdmin
+from .models import Service, ContactMessage, Project, HomeSection, HomeReel, ClientLogo, UserTestimonial
 
-# Registro para que aparezcan los Servicios
+@admin.register(HomeSection)
+class HomeSectionAdmin(admin.ModelAdmin):
+    list_display = ('section_type', 'title', 'is_active', 'order')
+    list_editable = ('is_active', 'order')
+
+@admin.register(HomeReel)
+class HomeReelAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_active')
+
+@admin.register(ClientLogo)
+class ClientLogoAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+@admin.register(UserTestimonial)
+class UserTestimonialAdmin(admin.ModelAdmin):
+    list_display = ('name', 'rating')
+
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('title', 'order', 'is_active')
-    list_editable = ('order', 'is_active')
     prepopulated_fields = {'slug': ('title',)}
-    search_fields = ('title',)
 
-# Registro para que aparezcan los Proyectos (Software Desarrollado)
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'order', 'technologies')
-    list_editable = ('order',)
-    search_fields = ('title', 'technologies')
+    list_display = ('title', 'order')
 
-# Registro para que aparezcan los Mensajes de Contacto (BLINDADO)
 @admin.register(ContactMessage)
 class ContactMessageAdmin(ImportExportModelAdmin): 
-    # Agregamos campos adicionales para que Angelo tenga más contexto rápido
     list_display = ('name', 'email', 'servicio_interes', 'created_at')
-    readonly_fields = ('created_at',)
-    search_fields = ('name', 'email', 'message')
-    list_filter = ('servicio_interes', 'created_at')
-
-    # --- INTEGRACIÓN DEL DASHBOARD PROFESIONAL ---
     change_list_template = "admin/agency/contactmessage/change_list.html"
