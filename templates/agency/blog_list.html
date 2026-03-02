@@ -1,33 +1,60 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mx-auto p-8 bg-gray-50 min-h-screen">
+<div class="container mx-auto p-8 bg-gray-50 min-h-screen"> 
     <div class="text-center mb-16">
-        <h1 class="text-4xl md:text-6xl font-black text-blue-900 italic uppercase tracking-tighter">Blog MD Chile</h1>
-        <div class="w-24 h-2 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+        <h1 class="text-4xl md:text-6xl font-black text-blue-900 italic mb-4 uppercase tracking-tighter">Blog de Expertos</h1>
+        <div class="w-24 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
     </div>
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         {% for post in posts %}
-            <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 transform transition hover:scale-105 duration-300 flex flex-col">
-                {% if post.image %}
-                    <img src="{{ post.image.url }}" class="w-full h-56 object-cover" alt="{{ post.title }}">
-                {% endif %}
-                <div class="p-8 flex-grow flex flex-col">
-                    <span class="text-[10px] font-black text-blue-600 uppercase mb-2 tracking-widest">Artículo</span>
-                    <h2 class="text-2xl font-bold mb-4 text-gray-900 leading-tight">{{ post.title }}</h2>
-                    <p class="text-gray-500 text-sm mb-6 line-clamp-3 font-medium">
-                        {{ post.content|striptags|truncatechars:120 }}
-                    </p>
-                    <div class="mt-auto">
-                        <a href="{% url 'blog_detail' post.slug %}" class="inline-block bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition">
-                            Leer artículo completo →
-                        </a>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-2 duration-300 flex flex-col">
+                
+                <div class="h-52 w-full overflow-hidden">
+                    {% if post.image %}
+                        <img src="{{ post.image.url }}" class="w-full h-full object-cover" alt="{{ post.title }}">
+                    {% endif %}
+                </div>
+
+                <div class="p-6 flex-grow flex flex-col">
+                    <div class="flex items-center text-gray-400 text-[10px] font-black uppercase tracking-widest mb-4">
+                        <span>{{ post.created_at|date:"d M Y" }}</span>
+                        <span class="mx-2 text-blue-600">|</span>
+                        <span>{{ post.reading_time }} min lectura</span>
+                    </div>
+
+                    <h2 class="text-2xl font-black mb-6 text-gray-900 leading-tight hover:text-blue-600 transition cursor-pointer">
+                        <a href="{% url 'blog_detail' post.slug %}">{{ post.title|upper }}</a>
+                    </h2>
+
+                    <div class="flex items-center mb-8 pb-6 border-b border-gray-50">
+                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-50 shadow-sm mr-3 flex-shrink-0">
+                            {% if post.author.profile_picture %}
+                                <img src="{{ post.author.profile_picture.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                                <div class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-black text-xs italic">
+                                    {{ post.author.first_name|slice:":1"|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span class="text-gray-700 text-sm font-bold italic">
+                            {{ post.author.get_full_name|default:post.author.username }}
+                        </span>
+                    </div>
+
+                    <div class="mt-auto flex items-center space-x-3">
+                        <div class="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 flex items-center text-gray-500 text-[11px] font-black uppercase tracking-tighter">
+                            <span class="mr-2 text-sm">❤️</span> {{ post.likes_count }} me gusta
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 flex items-center text-gray-500 text-[11px] font-black uppercase tracking-tighter">
+                            <span class="mr-2 text-sm">💬</span> {{ post.comments_count }}
+                        </div>
                     </div>
                 </div>
             </div>
         {% empty %}
-            <div class="col-span-full py-20 text-center">
-                <p class="text-gray-400 font-bold italic">Próximamente publicaremos contenido exclusivo para nuestra comunidad.</p>
+            <div class="col-span-full py-20 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100">
+                <p class="text-gray-400 font-bold italic">Estamos preparando contenido de alto valor para ti.</p>
             </div>
         {% endfor %}
     </div>

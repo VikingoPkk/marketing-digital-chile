@@ -237,6 +237,13 @@ def blog_list(request):
     return render(request, 'agency/blog_list.html', {'posts': posts})
 
 def blog_detail(request, slug):
-    """Muestra el contenido de un artículo específico."""
+    """Muestra el contenido de un artículo específico con sidebar estilo Platzi."""
     post = get_object_or_404(Post, slug=slug, is_published=True)
     return render(request, 'agency/blog_detail.html', {'post': post})
+
+def post_like(request, post_id):
+    """Suma un me gusta al post y redirige."""
+    post = get_object_or_404(Post, id=post_id)
+    post.likes_count += 1
+    post.save()
+    return redirect('blog_detail', slug=post.slug)

@@ -44,7 +44,6 @@ class ClientLogo(models.Model):
         return self.name
 
 class UserTestimonial(models.Model):
-    # Relación dinámica con el usuario (Soluciona error E301 de tu terminal)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
@@ -120,12 +119,13 @@ class Project(models.Model):
     def __str__(self):
         return self.title
 
-# --- 4. SISTEMA DE BLOG ---
+# --- 4. SISTEMA DE BLOG (ESTILO PREMIUM) ---
 class Post(models.Model):
     title = models.CharField(max_length=200, verbose_name="Título del Artículo")
     slug = models.SlugField(unique=True, blank=True)
     content = models.TextField(verbose_name="Contenido (HTML permitido)")
     image = models.ImageField(upload_to='blog/', verbose_name="Imagen de Portada")
+    video_url = models.URLField(blank=True, null=True, verbose_name="URL Video Lateral (YouTube)")
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.CASCADE, 
@@ -133,11 +133,29 @@ class Post(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=True, verbose_name="¿Publicado?")
+    
+    # Métricas estilo Platzi
+    likes_count = models.PositiveIntegerField(default=0, verbose_name="Me gusta")
+    comments_count = models.PositiveIntegerField(default=0, verbose_name="Comentarios")
+    reading_time = models.PositiveIntegerField(default=5, verbose_name="Minutos de lectura")
 
     class Meta:
         ordering = ['-created_at']
         verbose_name = "Artículo"
         verbose_name_plural = "Blog - Artículos"
+
+    @property
+    def get_video_embed_url(self):
+        """Convierte cualquier link de YouTube en un link de Embed funcional."""
+        if self.video_url:
+            if 'youtu.be' in self.video_url:
+                video_id = self.video_url.split('/')[-1]
+                return f"https://www.youtube.com/embed/{video_id}"
+            elif 'watch?v=' in self.video_url:
+                video_id = self.video_url.split('v=')[-1].split('&')[0]
+                return f"https://www.youtube.com/embed/{video_id}"
+            return self.video_url # Si ya es embed, lo deja igual
+        return None
 
     def save(self, *args, **kwargs):
         if not self.slug:

@@ -1,24 +1,80 @@
 {% extends 'base.html' %}
 {% block content %}
-<article class="container mx-auto p-8 max-w-4xl bg-white my-12 rounded-[3rem] shadow-2xl border border-gray-50">
-    {% if post.image %}
-        <img src="{{ post.image.url }}" class="w-full h-96 object-cover rounded-[2rem] mb-10 shadow-lg" alt="{{ post.title }}">
-    {% endif %}
-    
-    <header class="mb-10 text-center md:text-left">
-        <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight italic uppercase tracking-tighter">{{ post.title }}</h1>
-        <div class="flex items-center text-gray-400 text-sm font-bold uppercase tracking-widest">
-            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg mr-4">Por {{ post.author.first_name|default:post.author.username }}</span>
-            <span>{{ post.created_at|date:"d M, Y" }}</span>
+<div class="bg-white min-h-screen">
+    <div class="container mx-auto px-6 py-12">
+        <div class="flex flex-col lg:flex-row gap-12">
+            
+            <article class="lg:w-2/3">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="w-full h-[450px] object-cover rounded-2xl mb-10 shadow-lg" alt="{{ post.title }}">
+                {% endif %}
+                
+                <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 italic uppercase tracking-tighter">
+                    {{ post.title }}
+                </h1>
+                
+                <div class="flex items-center space-x-4 mb-10 border-b border-gray-100 pb-8">
+                    <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-50">
+                        {% if post.author.profile_picture %}
+                            <img src="{{ post.author.profile_picture.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-black italic text-xs">
+                                {{ post.author.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <p class="text-gray-900 font-bold italic">{{ post.author.get_full_name|default:post.author.username }}</p>
+                        <p class="text-gray-400 text-xs font-black uppercase tracking-widest">
+                            {{ post.created_at|date:"d M, Y" }} • {{ post.reading_time }} min lectura
+                        </p>
+                    </div>
+                </div>
+
+                <div class="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed mb-16">
+                    {{ post.content|safe }}
+                </div>
+
+                <div class="mt-16 pt-8 border-t border-gray-100 flex items-center space-x-4">
+                    <a href="{% url 'post_like' post.id %}" class="flex items-center bg-blue-50 text-blue-600 px-8 py-3 rounded-2xl font-black transition hover:scale-105 active:scale-95 shadow-sm">
+                        <span class="mr-2 text-xl">❤️</span> {{ post.likes_count }} ME GUSTA
+                    </a>
+                    <div class="flex items-center bg-gray-50 text-gray-500 px-8 py-3 rounded-2xl font-black shadow-sm">
+                        <span class="mr-2 text-xl">💬</span> {{ post.comments_count }} COMENTARIOS
+                    </div>
+                </div>
+            </article>
+
+            <aside class="lg:w-1/3 space-y-8">
+                <div class="bg-blue-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
+                    <div class="relative z-10 text-center">
+                        <h3 class="text-2xl font-black mb-4 italic tracking-tighter leading-tight uppercase">Impulsa tu carrera</h3>
+                        <p class="text-blue-200 text-sm mb-8 font-medium">Compra uno de nuestros cursos expertos en nuestra academia online.</p>
+                        <a href="{% url 'services_list' %}" class="block w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-2xl transition transform hover:scale-105 shadow-xl uppercase tracking-widest text-sm">
+                            Ver Cursos Disponibles
+                        </a>
+                    </div>
+                </div>
+
+                {% if post.video_url %}
+                <div class="bg-gray-50 rounded-3xl p-3 shadow-inner border border-gray-100">
+                    <div class="aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
+                        <iframe class="w-full h-full" 
+                                src="{{ post.video_url|safe }}" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen></iframe>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest text-center">
+                            Video recomendado por {{ post.author.first_name }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            </aside>
+
         </div>
-    </header>
-
-    <div class="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed font-medium">
-        {{ post.content|safe }}
     </div>
-
-    <div class="mt-16 pt-8 border-t border-gray-100">
-        <a href="{% url 'blog_list' %}" class="text-blue-600 font-black hover:text-blue-800 transition uppercase tracking-widest text-sm">← Volver al listado</a>
-    </div>
-</article>
+</div>
 {% endblock %}

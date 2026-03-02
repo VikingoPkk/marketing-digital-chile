@@ -7,9 +7,11 @@ urlpatterns = [
     path('contacto/', views.contact_page, name='contact_view'),
     path('proyectos/', views.projects_list, name='projects_list'),
     
-    # --- SISTEMA DE BLOG (Asegurado para ReverseMatch) ---
+    # --- SISTEMA DE BLOG ---
     path('blog/', views.blog_list, name='blog_list'),
     path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
+    # LÍNEA AGREGADA PARA LIKES:
+    path('blog/like/<int:post_id>/', views.post_like, name='post_like'),
     
     # --- SISTEMA DE SERVICIOS Y LANDINGS (META SUITE) ---
     path('servicios/', views.services_list, name='services_list'),
