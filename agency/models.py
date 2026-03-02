@@ -100,6 +100,7 @@ class ContactMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     servicio_interes = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True)
     lead_source = models.CharField(max_length=100, default="Web Directa")
+    is_read = models.BooleanField(default=False, verbose_name="¿Leído?")
 
     def __str__(self):
         return f"Lead: {self.name}"
@@ -134,7 +135,6 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_published = models.BooleanField(default=True, verbose_name="¿Publicado?")
     
-    # Métricas estilo Platzi
     likes_count = models.PositiveIntegerField(default=0, verbose_name="Me gusta")
     comments_count = models.PositiveIntegerField(default=0, verbose_name="Comentarios")
     reading_time = models.PositiveIntegerField(default=5, verbose_name="Minutos de lectura")
@@ -154,7 +154,7 @@ class Post(models.Model):
             elif 'watch?v=' in self.video_url:
                 video_id = self.video_url.split('v=')[-1].split('&')[0]
                 return f"https://www.youtube.com/embed/{video_id}"
-            return self.video_url # Si ya es embed, lo deja igual
+            return self.video_url
         return None
 
     def save(self, *args, **kwargs):

@@ -131,9 +131,16 @@ JAZZMIN_SETTINGS = {
     "welcome_sign": "Bienvenido al Centro de Comando, Angelo",
     "copyright": "Marketing Digital Chile",
     "search_model": ["agency.Post", "courses.Course"],
-    "user_avatar": "profile_picture", # Usará tu foto de perfil de 'users.User'
+    "user_avatar": "profile_picture",
 
-    # --- ICONOS PARA EL MENÚ LATERAL ---
+    # --- ESTO ACTIVA EL NÚMERO DE NOTIFICACIÓN (+1 a +99) ---
+    "menu_count": [
+        {
+            "model": "agency.contactmessage", # IMPORTANTE: En minúsculas aquí
+            "func": lambda obj: obj.objects.filter(is_read=False).count() 
+        }
+    ],
+
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
@@ -146,10 +153,10 @@ JAZZMIN_SETTINGS = {
         "courses.Enrollment": "fas fa-user-graduate",
     },
     
-    # --- DISEÑO ---
     "show_sidebar": True,
     "navigation_expanded": True,
     "order_with_respect_to": ["agency", "courses", "auth"],
+    "show_ui_builder": True, # <--- INTERRUPTOR MAESTRO PARA COMPONENTES DINÁMICOS
 }
 
 JAZZMIN_UI_CONFIG = {
@@ -162,7 +169,7 @@ JAZZMIN_UI_CONFIG = {
     "navbar": "navbar-dark",
     "no_navbar_border": False,
     "navbar_fixed": True,
-    "layout_boxed": False, # Ocupa toda la pantalla
+    "layout_boxed": False, 
     "footer_fixed": False,
     "sidebar_fixed": True,
     "sidebar": "sidebar-dark-primary",

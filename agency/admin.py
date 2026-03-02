@@ -19,18 +19,15 @@ class ClientLogoAdmin(admin.ModelAdmin):
 class UserTestimonialAdmin(admin.ModelAdmin):
     list_display = ('name', 'rating', 'is_approved', 'created_at')
     list_filter = ('is_approved', 'rating', 'created_at')
-    search_fields = ('name', 'comment')
     actions = ['approve_testimonials', 'reject_testimonials']
 
-    @admin.action(description="Aprobar testimonios (Publicar en Home)")
+    @admin.action(description="Aprobar testimonios")
     def approve_testimonials(self, request, queryset):
         queryset.update(is_approved=True)
-        self.message_user(request, "Los testimonios seleccionados han sido aprobados.")
 
-    @admin.action(description="Reprobar testimonios (Quitar del Home)")
+    @admin.action(description="Reprobar testimonios")
     def reject_testimonials(self, request, queryset):
         queryset.update(is_approved=False)
-        self.message_user(request, "Los testimonios seleccionados han sido ocultados.")
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
@@ -43,30 +40,21 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(ImportExportModelAdmin): 
-    list_display = ('name', 'email', 'servicio_interes', 'created_at')
+    list_display = ('name', 'email', 'servicio_interes', 'is_read', 'created_at')
+    list_filter = ('is_read', 'servicio_interes', 'created_at')
+    actions = ['mark_as_read']
 
-# --- REGISTRO DEL BLOG ACTUALIZADO ---
+    @admin.action(description="Marcar como LEÍDOS")
+    def mark_as_read(self, request, queryset):
+        queryset.update(is_read=True)
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'created_at', 'is_published')
-    list_filter = ('is_published', 'author', 'created_at')
-    search_fields = ('title', 'content')
     prepopulated_fields = {'slug': ('title',)}
-    
-    # Organización premium del formulario de edición
     fieldsets = (
-        ('Información Principal', {
-            'fields': ('title', 'slug', 'author', 'is_published')
-        }),
-        ('Contenido Visual', {
-            'fields': ('image', 'video_url'),
-            'description': 'Pega aquí cualquier link de YouTube (normal, corto o embed).'
-        }),
-        ('Cuerpo del Artículo', {
-            'fields': ('content',)
-        }),
-        ('Métricas de Interacción', {
-            'fields': ('likes_count', 'comments_count', 'reading_time'),
-            'classes': ('collapse',) # Permite ocultar esta sección por defecto
-        }),
+        ('Información', {'fields': ('title', 'slug', 'author', 'is_published')}),
+        ('Visual', {'fields': ('image', 'video_url')}),
+        ('Contenido', {'fields': ('content',)}),
+        ('Métricas', {'fields': ('likes_count', 'comments_count', 'reading_time'), 'classes': ('collapse',)}),
     )
