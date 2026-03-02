@@ -5,13 +5,17 @@ urlpatterns = [
     # --- NAVEGACIÓN PRINCIPAL ---
     path('', views.home, name='home'),
     path('contacto/', views.contact_page, name='contact_view'),
-    path('proyectos/', views.projects_list, name='projects_list'), # <-- NUEVA RUTA
+    path('proyectos/', views.projects_list, name='projects_list'),
+    
+    # --- SISTEMA DE BLOG (Asegurado para ReverseMatch) ---
+    path('blog/', views.blog_list, name='blog_list'),
+    path('blog/<slug:slug>/', views.blog_detail, name='blog_detail'),
     
     # --- SISTEMA DE SERVICIOS Y LANDINGS (META SUITE) ---
     path('servicios/', views.services_list, name='services_list'),
     path('servicios/<slug:slug>/', views.service_detail, name='service_detail'),
     
-    # --- DASHBOARD DE AGENCIA (NUEVO) ---
+    # --- DASHBOARD DE AGENCIA ---
     path('prospectos-agencia/', views.leads_dashboard, name='leads_dashboard'),
     
     # --- SISTEMA DE ACADEMIA (DASHBOARD Y CURSOS) ---

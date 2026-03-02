@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<article class="container mx-auto p-8 max-w-4xl bg-white my-12 rounded-[3rem] shadow-2xl border border-gray-50">
+    {% if post.image %}
+        <img src="{{ post.image.url }}" class="w-full h-96 object-cover rounded-[2rem] mb-10 shadow-lg" alt="{{ post.title }}">
+    {% endif %}
+    
+    <header class="mb-10 text-center md:text-left">
+        <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight italic uppercase tracking-tighter">{{ post.title }}</h1>
+        <div class="flex items-center text-gray-400 text-sm font-bold uppercase tracking-widest">
+            <span class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg mr-4">Por {{ post.author.first_name|default:post.author.username }}</span>
+            <span>{{ post.created_at|date:"d M, Y" }}</span>
+        </div>
+    </header>
+
+    <div class="prose prose-blue max-w-none text-gray-700 text-lg leading-relaxed font-medium">
+        {{ post.content|safe }}
+    </div>
+
+    <div class="mt-16 pt-8 border-t border-gray-100">
+        <a href="{% url 'blog_list' %}" class="text-blue-600 font-black hover:text-blue-800 transition uppercase tracking-widest text-sm">← Volver al listado</a>
+    </div>
+</article>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from .models import UserTestimonial, HomeSection, HomeReel, ClientLogo, Service, ContactMessage, Project
+from .models import UserTestimonial, HomeSection, HomeReel, ClientLogo, Service, ContactMessage, Project, Post
 
 @admin.register(HomeSection)
 class HomeSectionAdmin(admin.ModelAdmin):
@@ -44,5 +44,12 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(ContactMessage)
 class ContactMessageAdmin(ImportExportModelAdmin): 
     list_display = ('name', 'email', 'servicio_interes', 'created_at')
-    # Nota: Asegúrate de tener este archivo creado o comenta la línea de abajo si da error
     # change_list_template = "admin/agency/contactmessage/change_list.html"
+
+# --- REGISTRO DEL BLOG ---
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'created_at', 'is_published')
+    list_filter = ('is_published', 'author', 'created_at')
+    search_fields = ('title', 'content')
+    prepopulated_fields = {'slug': ('title',)}

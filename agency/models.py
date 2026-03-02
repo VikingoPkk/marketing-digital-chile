@@ -119,3 +119,30 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+# --- 4. SISTEMA DE BLOG ---
+class Post(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Título del Artículo")
+    slug = models.SlugField(unique=True, blank=True)
+    content = models.TextField(verbose_name="Contenido (HTML permitido)")
+    image = models.ImageField(upload_to='blog/', verbose_name="Imagen de Portada")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        verbose_name="Autor"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=True, verbose_name="¿Publicado?")
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Artículo"
+        verbose_name_plural = "Blog - Artículos"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
