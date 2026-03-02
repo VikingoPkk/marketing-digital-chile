@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
+from django.conf import settings
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 
 # --- 1. ESTRUCTURA MODULAR DEL HOME ---
 class HomeSection(models.Model):
@@ -33,23 +35,37 @@ class HomeReel(models.Model):
     def __str__(self):
         return self.title
 
-# Busque el modelo ClientLogo y actualícelo así:
 class ClientLogo(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nombre de la Empresa")
     logo = models.ImageField(upload_to='clients/', verbose_name="Foto/Logo del Cliente")
-    url_web = models.URLField(blank=True, null=True, verbose_name="Enlace a su sitio web") # 👈 Nuevo campo
+    url_web = models.URLField(blank=True, null=True, verbose_name="Enlace a su sitio web")
     
     def __str__(self):
         return self.name
 
 class UserTestimonial(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Nombre del Cliente")
-    comment = models.TextField(verbose_name="Testimonio")
-    avatar = models.ImageField(upload_to='testimonials/', blank=True, null=True, verbose_name="Foto")
+    # Relación dinámica con el usuario (Soluciona error E301 de tu terminal)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name="testimonios",
+        verbose_name="Alumno"
+    )
+    name = models.CharField(max_length=100, verbose_name="Nombre para mostrar")
+    comment = models.TextField(
+        validators=[MinLengthValidator(10), MaxLengthValidator(300)],
+        verbose_name="Reseña (Máx 300 caracteres)"
+    )
     rating = models.IntegerField(default=5, choices=[(i, i) for i in range(1, 6)], verbose_name="Estrellas")
+    is_approved = models.BooleanField(default=False, verbose_name="¿Aprobado para el Home?")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de envío")
+
+    class Meta:
+        verbose_name = "Testimonio de Usuario"
+        verbose_name_plural = "Testimonios de Usuarios"
 
     def __str__(self):
-        return f"Testimonio de {self.name}"
+        return f"{self.name} - {self.rating} Estrellas"
 
 # --- 3. SERVICIOS, PROYECTOS Y LEADS ---
 class Service(models.Model):
