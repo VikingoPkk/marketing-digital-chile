@@ -11,6 +11,7 @@ ALLOWED_HOSTS = []
 
 # Aplicaciones
 INSTALLED_APPS = [
+    'jazzmin',  # <--- JAZZMIN SIEMPRE DEBE IR PRIMERO
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,8 +53,8 @@ TEMPLATES = [
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth', # <-- REPARADO
-                'django.contrib.messages.context_processors.messages', # <-- REPARADO
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
@@ -61,7 +62,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'marketing_digital.wsgi.application'
 
-# --- BASE DE DATOS SIN DUPLICADOS ---
+# --- BASE DE DATOS ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -108,7 +109,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'users.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' 
 
-# Permite que el navegador renderice iframes correctamente
+# Permite que el navegador renderice iframes correctamente (Para videos de YouTube)
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # --- CONFIGURACIÓN DE ENVÍO DE CORREOS ---
@@ -119,3 +120,58 @@ EMAIL_USE_TLS = True
 DEFAULT_CHARSET = 'utf-8'
 EMAIL_HOST_USER = 'oncocit2@gmail.com'
 EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy'
+
+# =============================================================================
+# CONFIGURACIÓN DE JAZZMIN (DISEÑO PREMIUM DEL ADMIN)
+# =============================================================================
+JAZZMIN_SETTINGS = {
+    "site_title": "MD Chile Admin",
+    "site_header": "Marketing Digital Chile",
+    "site_brand": "MD CHILE",
+    "welcome_sign": "Bienvenido al Centro de Comando, Angelo",
+    "copyright": "Marketing Digital Chile",
+    "search_model": ["agency.Post", "courses.Course"],
+    "user_avatar": "profile_picture", # Usará tu foto de perfil de 'users.User'
+
+    # --- ICONOS PARA EL MENÚ LATERAL ---
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "agency.Post": "fas fa-blog",
+        "agency.Service": "fas fa-rocket",
+        "agency.Project": "fas fa-code",
+        "agency.ContactMessage": "fas fa-envelope-open-text",
+        "courses.Course": "fas fa-graduation-cap",
+        "courses.Lesson": "fas fa-play-circle",
+        "courses.Enrollment": "fas fa-user-graduate",
+    },
+    
+    # --- DISEÑO ---
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "order_with_respect_to": ["agency", "courses", "auth"],
+}
+
+JAZZMIN_UI_CONFIG = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False, # Ocupa toda la pantalla
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "flatly", 
+    "dark_mode_theme": "darkly", 
+}
