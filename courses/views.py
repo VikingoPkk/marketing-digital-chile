@@ -14,22 +14,24 @@ from reportlab.lib.units import cm
 # Modelos del sistema
 from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
 from agency.models import Service, ContactMessage, Project, HomeSection, ClientLogo, UserTestimonial, HomeReel
+from agency.forms import TestimonialForm  # Inyectado para el sistema de evaluación
 
 # ==========================================
 # 1. VISTAS DE NAVEGACIÓN Y AGENCIA DINÁMICA
 # ==========================================
-
-# ... (mantenga todos sus imports arriba) ...
 
 def home(request):
     """Página de inicio modular de lujo controlada por Angelo."""
     # Cargamos solo las piezas que Angelo marcó como ACTIVO en el Admin
     secciones = HomeSection.objects.filter(is_active=True).order_by('order')
     
-    # Traemos el botín de cada almacén para alimentar el Home dinámico
-    reels = HomeReel.objects.filter(is_active=True)[:4] # Máximo 4 para mantener el diseño limpio
+    # Traemos el contenido dinámico
+    reels = HomeReel.objects.filter(is_active=True)[:4]
     logos = ClientLogo.objects.all()
-    testimonios = UserTestimonial.objects.all()
+    
+    # MODIFICACIÓN: Filtramos solo testimonios aprobados por Angelo
+    testimonios = UserTestimonial.objects.filter(is_approved=True).order_by('-created_at')
+    
     servicios = Service.objects.filter(is_active=True).order_by('order')[:3]
     proyectos = Project.objects.all().order_by('order')[:3]
 
@@ -41,8 +43,6 @@ def home(request):
         'servicios': servicios,
         'proyectos': proyectos
     })
-
-# ... (mantenga todas las demás vistas de cursos y certificados abajo) ...
 
 def contact_page(request):
     """Muestra la página de contacto oficial."""
@@ -58,7 +58,6 @@ def projects_list(request):
     proyectos = Project.objects.all().order_by('order') 
     return render(request, 'agency/projects_list.html', {'proyectos': proyectos})
 
-# --- LANDING PAGE CON CORREO HTML PROFESIONAL ---
 def service_detail(request, slug):
     """Landing page individual con captura de lead y envío de regalo."""
     service = get_object_or_404(Service, slug=slug, is_active=True)
@@ -69,7 +68,6 @@ def service_detail(request, slug):
         mensaje = request.POST.get('message')
         
         if nombre and email:
-            # 1. Guardar el Lead en la base de datos
             ContactMessage.objects.create(
                 name=nombre,
                 email=email,
@@ -78,10 +76,8 @@ def service_detail(request, slug):
                 lead_source=f"Landing_{service.slug}"
             )
             
-            # 2. Construir link del regalo
             regalo_url = request.build_absolute_uri(service.regalo_pdf.url) if service.regalo_pdf else service.regalo_video_privado
             
-            # 3. Preparar el Correo con Diseño HTML
             asunto = f"🎁 ¡Aquí tienes tu regalo de MD Chile: {service.title}!"
             context = {
                 'nombre': nombre,
@@ -111,7 +107,6 @@ def service_detail(request, slug):
 
     return render(request, 'agency/service_landing.html', {'service': service})
 
-# --- DASHBOARD DE LEADS PARA ANGELO ---
 @login_required
 def leads_dashboard(request):
     """Vista exclusiva para que Angelo vea los prospectos capturados."""
@@ -128,7 +123,7 @@ def leads_dashboard(request):
 
 @login_required
 def dashboard(request):
-    """Panel del alumno con progreso real de cursos."""
+    """Panel del alumno con progreso real y sistema de evaluación."""
     inscripciones = Enrollment.objects.filter(user=request.user)
     cursos_inscritos = []
 
@@ -147,11 +142,26 @@ def dashboard(request):
             'progreso': progreso
         })
 
+    # INYECTADO: Procesamiento del formulario de testimonios
+    testimonial_form = TestimonialForm()
+    if request.method == 'POST' and 'submit_testimonial' in request.POST:
+        testimonial_form = TestimonialForm(request.POST)
+        if testimonial_form.is_valid():
+            nuevo_testimonio = testimonial_form.save(commit=False)
+            nuevo_testimonio.user = request.user
+            # Seteamos el nombre del alumno automáticamente
+            nuevo_testimonio.name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+            nuevo_testimonio.is_approved = False  # Moderación requerida
+            nuevo_testimonio.save()
+            messages.success(request, "¡Gracias! Tu reseña ha sido enviada a Angelo para su aprobación.")
+            return redirect('dashboard')
+
     otros_cursos = Course.objects.exclude(enrollment__user=request.user).filter(is_published=True)
 
     return render(request, 'dashboard.html', {
         'cursos_inscritos': cursos_inscritos,
-        'otros_cursos': otros_cursos
+        'otros_cursos': otros_cursos,
+        'testimonial_form': testimonial_form, # Enviado al template para el modal de estrellas
     })
 
 @login_required
@@ -273,5 +283,3 @@ def generate_diploma_pdf(request, certificate_id):
     c.setFont("Helvetica-Bold", 22); c.drawCentredString(width/2, height/2 - 3.5*cm, cert.course.title.upper())
     c.save(); buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'Diploma_{cert.course.slug}.pdf')
-
-# ... (mantenga todos sus imports arriba) ...

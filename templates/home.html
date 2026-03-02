@@ -3,6 +3,35 @@
 {% block content %}
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
 
+<style>
+    /* Efecto de suavizado para todo el sitio */
+    html { scroll-behavior: smooth; }
+    .home-wrapper section { transition: all 0.5s ease-in-out; }
+    
+    /* Animación de entrada suave */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .home-wrapper section { animation: fadeInUp 0.8s ease-out forwards; }
+
+    /* --- ESTILO DE ESTRELLAS MD CHILE --- */
+    .estrellas-row {
+        display: flex;
+        justify-content: space-between; /* Distribuye las estrellas al ancho total */
+        width: 100%;
+        max-width: 140px; /* Ajustado para encajar con el bloque de texto */
+        margin-bottom: 1.5rem;
+    }
+
+    .estrella-azul {
+        color: #3b82f6; /* Azul corporativo MD Chile */
+        font-size: 1.8rem; /* Tamaño aumentado para mayor impacto visual */
+        line-height: 1;
+        text-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+    }
+</style>
+
 <div class="home-wrapper" style="font-family: 'Plus Jakarta Sans', sans-serif;">
     {% for seccion in secciones %}
         
@@ -77,8 +106,6 @@
                                 VISITAR {{ logo.name|upper }}
                             </span>
                         </a>
-                    {% empty %}
-                        <p class="text-gray-300 italic">Cargando aliados estratégicos...</p>
                     {% endfor %}
                 </div>
             </div>
@@ -88,23 +115,37 @@
         {% if seccion.section_type == 'testimonials' %}
         <section class="py-24 bg-white relative">
             <div class="container mx-auto px-6">
-                <h2 class="text-4xl font-black text-center mb-16 tracking-tight">{{ seccion.title|upper }}</h2>
+                <h2 class="text-4xl font-black text-center mb-16 tracking-tight uppercase italic">{{ seccion.title|upper }}</h2>
                 <div class="grid md:grid-cols-3 gap-10">
                     {% for testimonio in testimonios %}
-                    <div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-blue-500/10 group">
-                        <div class="flex text-blue-500 mb-6 space-x-1">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= testimonio.rating %}★{% endif %}
+                    <div class="bg-gray-50 p-10 rounded-[3rem] border border-gray-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-blue-500/10 group flex flex-col">
+                        
+                        <div class="estrellas-row">
+                            {% for i in "12345"|make_list %}
+                                <span class="estrella-azul">
+                                    {% if forloop.counter <= testimonio.rating %}★{% else %}☆{% endif %}
+                                </span>
                             {% endfor %}
                         </div>
+
                         <p class="text-xl text-gray-700 leading-relaxed mb-8 italic font-medium">"{{ testimonio.comment }}"</p>
-                        <div class="flex items-center gap-4">
-                            {% if testimonio.avatar %}
-                                <img src="{{ testimonio.avatar.url }}" class="w-14 h-14 rounded-2xl object-cover shadow-md">
-                            {% endif %}
+                        
+                        <div class="mt-auto flex items-center gap-4">
+                            <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500/20 shadow-md flex-shrink-0">
+                                {% if testimonio.user.profile_picture %}
+                                    <img src="{{ testimonio.user.profile_picture.url }}" class="w-full h-full object-cover" alt="{{ testimonio.name }}">
+                                {% elif testimonio.avatar %}
+                                    <img src="{{ testimonio.avatar.url }}" class="w-full h-full object-cover" alt="{{ testimonio.name }}">
+                                {% else %}
+                                    <div class="w-full h-full bg-blue-600 flex items-center justify-center text-white font-black text-xl italic">
+                                        {{ testimonio.name|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
                             <div>
-                                <h4 class="font-bold text-gray-900 text-lg">{{ testimonio.name }}</h4>
-                                <span class="text-sm text-blue-600 font-bold uppercase tracking-wider">Cliente Verificado</span>
+                                <h4 class="font-bold text-gray-900 text-lg leading-tight">{{ testimonio.name }}</h4>
+                                <span class="text-xs text-blue-600 font-black uppercase tracking-widest">Cliente Verificado</span>
                             </div>
                         </div>
                     </div>
@@ -147,17 +188,4 @@
 
     {% endfor %}
 </div>
-
-<style>
-    /* Efecto de suavizado para todo el sitio */
-    html { scroll-behavior: smooth; }
-    .home-wrapper section { transition: all 0.5s ease-in-out; }
-    
-    /* Animación de entrada suave */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .home-wrapper section { animation: fadeInUp 0.8s ease-out forwards; }
-</style>
 {% endblock %}
