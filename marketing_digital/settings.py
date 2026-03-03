@@ -19,8 +19,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites', 
-
-    'import_export', # <-- ARTILLERÍA DE EXPORTACIÓN
+    'corsheaders',
+    'import_export', # <-- ARTILLERÍA DE EXPORTACIÓN 
+    'rest_framework',
     'agency',  
     'users',   
     'courses',
@@ -34,6 +35,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # AGREGAR ESTO AQUÍ
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -181,4 +183,6 @@ JAZZMIN_UI_CONFIG = {
     "sidebar_nav_flat_style": False,
     "theme": "flatly", 
     "dark_mode_theme": "darkly", 
-}
+} 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True

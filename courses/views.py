@@ -11,10 +11,17 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
 
+# Importaciones para la API móvil y REST Framework
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import CursoSerializer, LessonSerializer 
+
 # Modelos del sistema
 from .models import Course, Certificate, LessonProgress, Lesson, Enrollment, Quiz, CourseQuery
 from agency.models import Service, ContactMessage, Project, HomeSection, ClientLogo, UserTestimonial, HomeReel, Post
-from agency.forms import TestimonialForm  # Inyectado para el sistema de evaluación
+from agency.forms import TestimonialForm 
 
 # ==========================================
 # 1. VISTAS DE NAVEGACIÓN Y AGENCIA DINÁMICA
@@ -39,59 +46,38 @@ def home(request):
     })
 
 def contact_page(request):
-    """Muestra la página de contacto oficial."""
     return render(request, 'contact.html')
 
 def services_list(request):
-    """Muestra la vitrina de servicios dinámicos."""
     servicios_reales = Service.objects.filter(is_active=True).order_by('order')
     return render(request, 'servicios_academia.html', {'servicios': servicios_reales})
 
 def projects_list(request):
-    """Muestra la galería de softwares desarrollados."""
     proyectos = Project.objects.all().order_by('order') 
     return render(request, 'agency/projects_list.html', {'proyectos': proyectos})
 
 def service_detail(request, slug):
-    """Landing page individual con captura de lead y envío de regalo."""
     service = get_object_or_404(Service, slug=slug, is_active=True)
-    
     if request.method == 'POST':
         nombre = request.POST.get('name')
         email = request.POST.get('email')
         mensaje = request.POST.get('message')
-        
         if nombre and email:
-            ContactMessage.objects.create(
-                name=nombre,
-                email=email,
-                message=mensaje,
-                servicio_interes=service,
-                lead_source=f"Landing_{service.slug}"
-            )
-            
+            ContactMessage.objects.create(name=nombre, email=email, message=mensaje, servicio_interes=service, lead_source=f"Landing_{service.slug}")
             regalo_url = request.build_absolute_uri(service.regalo_pdf.url) if service.regalo_pdf else service.regalo_video_privado
             asunto = f"🎁 ¡Aquí tienes tu regalo de MD Chile: {service.title}!"
             context = {'nombre': nombre, 'servicio': service, 'regalo_url': regalo_url}
-            
             html_message = render_to_string('emails/welcome_lead.html', context)
             plain_message = strip_tags(html_message)
-            
             try:
                 send_mail(asunto, plain_message, settings.EMAIL_HOST_USER, [email], html_message=html_message, fail_silently=False)
-            except Exception as e:
-                print(f"Error enviando correo profesional: {e}")
-            
+            except Exception as e: print(f"Error: {e}")
             return render(request, 'agency/thanks_gift.html', {'service': service, 'nombre_cliente': nombre})
-
     return render(request, 'agency/service_landing.html', {'service': service})
 
 @login_required
 def leads_dashboard(request):
-    """Vista exclusiva para que Angelo vea los prospectos capturados."""
-    if not request.user.is_staff:
-        messages.error(request, "No tienes permisos de Capitán para ver esta zona.")
-        return redirect('dashboard')
+    if not request.user.is_staff: return redirect('dashboard')
     leads = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'agency/leads_admin.html', {'leads': leads})
 
@@ -101,46 +87,41 @@ def leads_dashboard(request):
 
 @login_required
 def dashboard(request):
-    """Panel del alumno con progreso real y sistema de evaluación."""
     inscripciones = Enrollment.objects.filter(user=request.user)
     cursos_inscritos = []
-
     for inscripcion in inscripciones:
         curso = inscripcion.course
         total = curso.total_lessons
         completadas = LessonProgress.objects.filter(user=request.user, lesson__module__course=curso, is_completed=True).count()
         progreso = int((completadas / total) * 100) if total > 0 else 0
         cursos_inscritos.append({'curso': curso, 'progreso': progreso})
-
     testimonial_form = TestimonialForm()
-    if request.method == 'POST' and 'submit_testimonial' in request.POST:
-        testimonial_form = TestimonialForm(request.POST)
-        if testimonial_form.is_valid():
-            nuevo_testimonio = testimonial_form.save(commit=False)
-            nuevo_testimonio.user = request.user
-            nuevo_testimonio.name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
-            nuevo_testimonio.is_approved = False
-            nuevo_testimonio.save()
-            messages.success(request, "¡Gracias! Tu reseña ha sido enviada a Angelo para su aprobación.")
-            return redirect('dashboard')
-
     otros_cursos = Course.objects.exclude(enrollment__user=request.user).filter(is_published=True)
     return render(request, 'dashboard.html', {'cursos_inscritos': cursos_inscritos, 'otros_cursos': otros_cursos, 'testimonial_form': testimonial_form})
 
 @login_required
 def course_detail(request, course_id):
+    """Vista de detalle del curso protegida contra fallos de navegación."""
     course = get_object_or_404(Course, id=course_id)
+    
+    # Verificación de inscripción
     if not Enrollment.objects.filter(user=request.user, course=course).exists():
         return redirect('checkout', course_id=course.id)
 
     lessons = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
+    
     if not lessons.exists():
         messages.warning(request, f"El curso '{course.title}' aún no tiene lecciones.")
         return redirect('dashboard')
 
+    # SEGURO: Si no viene lección en la URL, tomamos la primera
     lesson_id = request.GET.get('lesson')
-    current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course) if lesson_id else lessons.first()
+    if lesson_id:
+        current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course)
+    else:
+        current_lesson = lessons.first()
 
+    # Sistema de dudas
     if request.method == 'POST' and 'submit_query' in request.POST:
         question_text = request.POST.get('question')
         if question_text:
@@ -149,11 +130,19 @@ def course_detail(request, course_id):
             return redirect(f"/course/{course.id}/?lesson={current_lesson.id}")
 
     mis_dudas = CourseQuery.objects.filter(user=request.user, lesson=current_lesson).order_by('-created_at')
+    
+    # Cálculo de progreso para la web
     total = lessons.count()
     completas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
     progreso = int((completas / total) * 100) if total > 0 else 0
 
-    return render(request, 'courses/course_detail.html', {'course': course, 'lessons': lessons, 'current_lesson': current_lesson, 'progreso_curso': progreso, 'mis_dudas': mis_dudas})
+    return render(request, 'courses/course_detail.html', {
+        'course': course, 
+        'lessons': lessons, 
+        'current_lesson': current_lesson, 
+        'progreso_curso': progreso, 
+        'mis_dudas': mis_dudas
+    })
 
 @login_required
 def toggle_lesson_completion(request, lesson_id):
@@ -232,26 +221,49 @@ def generate_diploma_pdf(request, certificate_id):
 # ==========================================
 
 def blog_list(request):
-    """Muestra todos los artículos publicados."""
     posts = Post.objects.filter(is_published=True)
     return render(request, 'agency/blog_list.html', {'posts': posts})
 
 def blog_detail(request, slug):
-    """Muestra el contenido de un artículo específico con sidebar estilo Platzi."""
     post = get_object_or_404(Post, slug=slug, is_published=True)
     return render(request, 'agency/blog_detail.html', {'post': post})
 
 def post_like(request, post_id):
-    """Suma un me gusta al post y redirige."""
     post = get_object_or_404(Post, id=post_id)
     post.likes_count += 1
     post.save()
     return redirect('blog_detail', slug=post.slug)
-
-# agency/views.py
 
 def privacidad(request):
     return render(request, 'legal/privacidad.html')
 
 def terminos(request):
     return render(request, 'legal/terminos.html')
+
+# ==========================================
+# 4. API ENDPOINTS PARA APP MÓVIL
+# ==========================================
+
+class CursoListAPI(generics.ListAPIView):
+    queryset = Course.objects.filter(is_published=True)
+    serializer_class = CursoSerializer
+
+class LessonListAPI(generics.ListAPIView):
+    serializer_class = LessonSerializer 
+    def get_queryset(self):
+        course_id = self.kwargs['course_id']
+        return Lesson.objects.filter(module__course_id=course_id).order_by('order')
+
+class ToggleCompleteAPI(APIView):
+    """Recibe la señal de la App para marcar/desmarcar lecciones."""
+    def post(self, request, lesson_id):
+        # Usuario de prueba temporal
+        from django.contrib.auth.models import User
+        user = User.objects.first() 
+        
+        lesson = get_object_or_404(Lesson, id=lesson_id)
+        progress, created = LessonProgress.objects.get_or_create(user=user, lesson=lesson)
+        progress.is_completed = not progress.is_completed
+        progress.save()
+        
+        return Response({"status": "ok", "is_completed": progress.is_completed}, status=status.HTTP_200_OK)

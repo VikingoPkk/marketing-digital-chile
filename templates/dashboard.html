@@ -62,10 +62,10 @@
                     <div class="p-6 flex-grow flex flex-col">
                         <h3 class="text-xl font-bold mb-4 text-gray-800">{{ item.curso.title }}</h3>
                         <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-                            <div class="bg-gradient-to-r from-blue-600 to-green-400 h-4 rounded-full transition-all duration-700" style="width: {{ item.progreso }}%"></div>
+                            <div class="bg-gradient-to-r from-blue-600 to-green-400 h-4 rounded-full transition-all duration-700" style="width: {{ item.progreso|default:0 }}%;"></div>
                         </div>
                         <div class="flex justify-between items-center mb-6">
-                            <p class="text-xs font-bold text-gray-500">{{ item.progreso }}% completado</p>
+                            <p class="text-xs font-bold text-gray-500">{{ item.progreso|default:0 }}% completado</p>
                             <span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-1 rounded-full uppercase font-black tracking-tighter">Alumno</span>
                         </div>
                         <div class="space-y-3 mt-auto">
@@ -129,7 +129,7 @@
                             <label class="block text-sm font-black text-blue-900 uppercase tracking-widest mb-4 italic">Tu Reseña (Máx 300 caracteres):</label>
                             {{ testimonial_form.comment }}
                             <div class="mt-4 flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Tu reseña será revisada por nuestro equipo antes de publicarse</span>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Tu reseña será revisada por nuestro equipo</span>
                                 <span id="charCounter" class="text-xs font-black text-blue-600">0 / 300</span>
                             </div>
                         </div>
@@ -185,14 +185,12 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar Swiper
         new Swiper(".mySwiper", {
             slidesPerView: 1, spaceBetween: 30, loop: true,
             pagination: { el: ".swiper-pagination", clickable: true },
             breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } },
         });
 
-        // Lógica contador de caracteres
         const textarea = document.querySelector('textarea[name="comment"]');
         const counter = document.getElementById('charCounter');
         if (textarea && counter) {
