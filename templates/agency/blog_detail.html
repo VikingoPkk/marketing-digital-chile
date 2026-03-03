@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load social_share %}
+
 {% block content %}
 <div class="bg-white min-h-screen">
     <div class="container mx-auto px-6 py-12">
@@ -43,6 +45,64 @@
                         <span class="mr-2 text-xl">💬</span> {{ post.comments_count }} COMENTARIOS
                     </div>
                 </div>
+
+                <div class="mt-20">
+                    <h3 class="text-3xl font-black text-gray-900 mb-8 italic uppercase tracking-tighter">
+                        {{ post.comments_list.count }} Comentarios
+                    </h3>
+
+                    {% if user.is_authenticated %}
+                    <div class="bg-blue-900 rounded-3xl p-1 mb-12 shadow-xl overflow-hidden">
+                        <form action="{% url 'add_comment' post.id %}" method="POST" class="flex flex-col md:flex-row items-center p-2 gap-4">
+                            {% csrf_token %}
+                            <div class="flex-grow w-full relative group">
+                                <input type="text" name="content" placeholder="Escribe tu comentario aquí..." 
+                                       class="w-full bg-blue-950/50 border-2 border-transparent rounded-2xl px-6 py-4 text-white placeholder-blue-300/50 focus:bg-blue-950 focus:border-blue-500 focus:ring-0 outline-none transition-all duration-300">
+                                
+                                <div class="absolute bottom-0 left-0 h-0.5 bg-blue-400 w-0 group-focus-within:w-full transition-all duration-500 rounded-full"></div>
+                            </div>
+                            
+                            <button type="submit" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black px-10 py-4 rounded-2xl transition transform hover:scale-105 active:scale-95 uppercase tracking-widest text-xs shadow-lg">
+                                Comentar
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="bg-gray-50 rounded-3xl p-8 text-center mb-12 border-2 border-dashed border-gray-200">
+                        <p class="text-gray-500 font-bold italic">
+                            Para participar, <a href="{% url 'account_login' %}" class="text-blue-600 hover:underline">inicia sesión</a> en la academia.
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    <div class="space-y-6">
+                        {% for comment in post.comments_list.all %}
+                        <div class="bg-white rounded-3xl p-6 border border-gray-100 flex gap-5 transition hover:bg-gray-50 duration-300">
+                            <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-50 flex-shrink-0 shadow-sm">
+                                {% if comment.user.profile_picture %}
+                                    <img src="{{ comment.user.profile_picture.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full bg-blue-900 flex items-center justify-center text-white font-black italic text-xs uppercase">
+                                        {{ comment.user.username|slice:":1" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex-grow">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-black text-gray-900 italic text-sm">{{ comment.user.get_full_name|default:comment.user.username }}</span>
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">hace {{ comment.created_at|timesince }}</span>
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed">{{ comment.content }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="py-12 text-center">
+                            <p class="text-gray-400 font-bold italic uppercase tracking-tighter text-sm">Sé el primero en dejar un comentario</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </article>
 
             <aside class="lg:w-1/3 space-y-8">
@@ -60,7 +120,7 @@
                 <div class="bg-gray-50 rounded-3xl p-3 shadow-inner border border-gray-100">
                     <div class="aspect-video rounded-2xl overflow-hidden shadow-lg bg-black">
                         <iframe class="w-full h-full" 
-                                src="{{ post.video_url|safe }}" 
+                                src="{{ post.get_video_embed_url|safe }}" 
                                 frameborder="0" 
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                 allowfullscreen></iframe>
@@ -72,8 +132,57 @@
                     </div>
                 </div>
                 {% endif %}
-            </aside>
 
+                <div class="bg-blue-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10 text-center">
+                        <h3 class="text-2xl font-black mb-4 italic tracking-tighter leading-tight uppercase">
+                            Comparte este artículo
+                        </h3>
+                        <p class="text-blue-200 text-sm mb-8 font-medium">
+                            Muestra lo que aprendiste y ayuda a otros a crecer.
+                        </p>
+                        
+                        <div class="flex items-center justify-center space-x-3">
+                            {% share_link 'facebook' request.build_absolute_uri post.title as fb_link %}
+                            <a href="{{ fb_link }}" target="_blank" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl transition hover:bg-white hover:text-blue-900">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+
+                            {% share_link 'twitter' request.build_absolute_uri post.title as x_link %}
+                            <a href="{{ x_link }}" target="_blank" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl transition hover:bg-white hover:text-blue-900">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+
+                            {% share_link 'linkedin' request.build_absolute_uri post.title as li_link %}
+                            <a href="{{ li_link }}" target="_blank" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl transition hover:bg-white hover:text-blue-900">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+
+                            {% share_link 'whatsapp' request.build_absolute_uri post.title as wa_link %}
+                            <a href="{{ wa_link }}" target="_blank" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl transition hover:bg-white hover:text-blue-900">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+
+                            <button id="copy-btn" class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-xl transition hover:bg-white hover:text-blue-900"
+                                    data-url="{{ request.build_absolute_uri }}">
+                                <i class="fas fa-link"></i>
+                            </button>
+                        </div>
+                        <span id="copy-message" class="text-xs text-green-300 mt-4 block hidden font-black uppercase italic tracking-widest">¡Enlace Copiado!</span>
+                    </div>
+                </div>
+
+                <script>
+                    document.getElementById('copy-btn').addEventListener('click', function() {
+                        const url = this.getAttribute('data-url');
+                        const msg = document.getElementById('copy-message');
+                        navigator.clipboard.writeText(url).then(function() {
+                            msg.classList.remove('hidden');
+                            setTimeout(() => msg.classList.add('hidden'), 2500);
+                        });
+                    });
+                </script>
+            </aside>
         </div>
     </div>
 </div>

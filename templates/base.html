@@ -34,9 +34,7 @@
             <a href="{% url 'home' %}" class="hover:text-blue-600 transition">Inicio</a>
             <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition">Cursos</a>
             <a href="{% url 'services_list' %}" class="hover:text-blue-600 transition">Servicios</a>
-            <li class="nav-item">
-            <a class="nav-link {% if request.path == '/proyectos/' %}active{% endif %}" href="{% url 'projects_list' %}">PROYECTOS</a>
-            </li> 
+            <a class="hover:text-blue-600 transition {% if request.path == '/proyectos/' %}text-blue-600{% endif %}" href="{% url 'projects_list' %}">Proyectos</a>
             <a href="{% url 'blog_list' %}" class="text-gray-700 hover:text-blue-600 font-bold transition">Blog</a>
             <a href="{% url 'contact_view' %}" class="hover:text-blue-600 transition">Contacto</a>
         </div>
@@ -91,10 +89,22 @@
             <div class="col-span-1 md:col-span-2">
                 <h3 class="text-2xl font-black mb-6 text-blue-400 italic">MD CHILE</h3>
                 <p class="text-gray-400 max-w-sm mb-6 font-medium">Líderes en transformación digital y formación de alto impacto. Elevamos marcas chilenas al estándar global.</p>
-                <div class="flex space-x-5 text-2xl">
-                    <a href="#" class="text-gray-500 hover:text-blue-400 transition"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="text-gray-500 hover:text-pink-400 transition"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-gray-500 hover:text-blue-300 transition"><i class="fab fa-linkedin"></i></a>
+                
+                <div class="flex items-center space-x-6 mt-6">
+                    <a href="https://www.facebook.com/mktlatamcl" target="_blank" 
+                       class="text-gray-500 hover:text-white transition-colors duration-300 text-2xl">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+
+                    <a href="https://www.instagram.com/vikingoav/" target="_blank" 
+                       class="text-gray-500 hover:text-white transition-colors duration-300 text-2xl">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+
+                    <a href="https://www.linkedin.com/in/angelo-vilche/" target="_blank" 
+                       class="text-gray-500 hover:text-white transition-colors duration-300 text-2xl">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
                 </div>
             </div>
             <div>
@@ -108,8 +118,8 @@
             <div>
                 <h4 class="text-sm font-black uppercase tracking-widest mb-6 text-gray-500">Legal</h4>
                 <ul class="space-y-4 font-bold text-gray-400">
-                    <li><a href="#" class="hover:text-white transition">Privacidad</a></li>
-                    <li><a href="#" class="hover:text-white transition">Términos</a></li>
+                    <li><a href="{% url 'privacidad' %}" class="hover:text-white transition">Privacidad</a></li>
+                    <li><a href="{% url 'terminos' %}" class="hover:text-white transition">Términos</a></li>
                 </ul>
             </div>
         </div>

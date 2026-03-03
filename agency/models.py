@@ -146,7 +146,6 @@ class Post(models.Model):
 
     @property
     def get_video_embed_url(self):
-        """Convierte cualquier link de YouTube en un link de Embed funcional."""
         if self.video_url:
             if 'youtu.be' in self.video_url:
                 video_id = self.video_url.split('/')[-1]
@@ -164,3 +163,18 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+# --- NUEVO: SISTEMA DE COMENTARIOS ---
+class Comment(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments_list')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField(verbose_name="Comentario")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Comentario"
+        verbose_name_plural = "Comentarios"
+
+    def __str__(self):
+        return f"Comentario de {self.user.username} en {self.post.title}"

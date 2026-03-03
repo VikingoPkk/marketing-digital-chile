@@ -1,6 +1,6 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
-from .models import UserTestimonial, HomeSection, HomeReel, ClientLogo, Service, ContactMessage, Project, Post
+from .models import UserTestimonial, HomeSection, HomeReel, ClientLogo, Service, ContactMessage, Project, Post, Comment
 
 @admin.register(HomeSection)
 class HomeSectionAdmin(admin.ModelAdmin):
@@ -57,4 +57,12 @@ class PostAdmin(admin.ModelAdmin):
         ('Visual', {'fields': ('image', 'video_url')}),
         ('Contenido', {'fields': ('content',)}),
         ('Métricas', {'fields': ('likes_count', 'comments_count', 'reading_time'), 'classes': ('collapse',)}),
-    )
+    ) 
+
+# agency/admin.py
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('content', 'user__username', 'post__title')

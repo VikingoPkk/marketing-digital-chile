@@ -247,3 +247,11 @@ def post_like(request, post_id):
     post.likes_count += 1
     post.save()
     return redirect('blog_detail', slug=post.slug)
+
+# agency/views.py
+
+def privacidad(request):
+    return render(request, 'legal/privacidad.html')
+
+def terminos(request):
+    return render(request, 'legal/terminos.html')
