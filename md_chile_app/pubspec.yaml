@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: ^1.1.0
   youtube_player_flutter: ^9.1.1  # El motor de video para la academia
+  webview_flutter: ^4.4.2
 
 dev_dependencies:
   flutter_test:
