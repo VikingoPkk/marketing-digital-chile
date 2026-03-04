@@ -118,15 +118,36 @@ def checkout(request, course_id): return render(request, 'courses/checkout.html'
 
 @login_required
 def take_quiz(request, quiz_id):
-    quiz = get_object_or_404(Quiz, id=quiz_id); questions = quiz.questions.all()
+    """Vista de cuestionarios corregida para evitar fallos de redirección."""
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    questions = quiz.questions.all()
+    # Obtenemos el ID del curso de forma segura a través del módulo
+    course_id = quiz.module.course.id 
+
     if request.method == 'POST':
-        score = 0; review_data = []
+        score = 0
+        review_data = []
         for q in questions:
-            ans = request.POST.get(f'question_{q.id}'); is_correct = (int(ans) == q.correct_option) if ans else False
+            ans = request.POST.get(f'question_{q.id}')
+            is_correct = (int(ans) == q.correct_option) if ans else False
             if is_correct: score += 1
-            review_data.append({'question_text': q.text, 'user_answer_text': getattr(q, f'option{ans}') if ans else "N/A", 'correct_answer_text': getattr(q, f'option{q.correct_option}'), 'is_correct': is_correct})
-        request.session['quiz_result'] = {'quiz_title': quiz.title, 'percentage': round((score / questions.count()) * 100, 1), 'review_data': review_data}
-        return render(request, 'courses/quiz_result.html')
+            review_data.append({
+                'question_text': q.text, 
+                'user_answer_text': getattr(q, f'option{ans}') if ans else "Sin respuesta", 
+                'correct_answer_text': getattr(q, f'option{q.correct_option}'), 
+                'is_correct': is_correct
+            })
+        
+        # Guardamos el resultado con el course_id explícito
+        request.session['quiz_result'] = {
+            'quiz_title': quiz.title, 
+            'quiz_id': quiz.id, 
+            'percentage': round((score / questions.count()) * 100, 1) if questions.count() > 0 else 0, 
+            'course_id': course_id, 
+            'review_data': review_data
+        }
+        return render(request, 'courses/quiz_result.html', {'course_id': course_id})
+        
     return render(request, 'courses/quiz.html', {'quiz': quiz, 'questions': questions})
 
 @login_required

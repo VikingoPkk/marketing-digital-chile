@@ -30,7 +30,7 @@
                class="block w-full bg-blue-600 text-white font-black py-5 rounded-xl shadow-xl shadow-blue-100 hover:bg-blue-700 transition uppercase tracking-widest transform hover:scale-105">
                 Continuar al Curso 🎓
             </a>
-            
+        
             {% if request.session.quiz_result.percentage < 90 %}
                 <a href="{% url 'take_quiz' request.session.quiz_result.quiz_id %}" class="block w-full text-blue-600 font-black py-2 hover:underline text-sm uppercase tracking-tighter">
                     Reintentar examen ahora
