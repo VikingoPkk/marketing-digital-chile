@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include 
 from . import views
 
 urlpatterns = [
@@ -36,4 +36,7 @@ urlpatterns = [
     # --- DIPLOMAS Y CERTIFICADOS ---
     path('certificate/check/<int:course_id>/', views.check_certificate, name='check_certificate'),
     path('certificate/pdf/<int:certificate_id>/', views.generate_diploma_pdf, name='generate_diploma_pdf'),
+    
+    # --- CONEXIÓN A ACADEMIA PÚBLICA (NUEVAS PÁGINAS) ---
+    path('', include('courses.urls_public')),
 ]

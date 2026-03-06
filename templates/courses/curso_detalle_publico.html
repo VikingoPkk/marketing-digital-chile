@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-[#0f172a] text-white font-sans">
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <div class="lg:col-span-2">
+                <nav class="flex mb-8 text-sm font-bold uppercase tracking-widest text-blue-500">
+                    <a href="{% url 'academia_publica' %}" class="hover:text-white transition-colors">Academia</a>
+                    <span class="mx-3 text-gray-700">/</span>
+                    <span class="text-gray-400">{{ course.title }}</span>
+                </nav>
+
+                <h1 class="text-5xl md:text-6xl font-black mb-6 italic uppercase tracking-tighter leading-none">
+                    {{ course.title }}
+                </h1>
+                
+                <p class="text-xl text-gray-400 mb-10 leading-relaxed max-w-3xl">
+                    {{ course.description }}
+                </p>
+
+                <div class="mt-12">
+                    <h3 class="text-xs font-black text-blue-500 uppercase tracking-[0.3em] mb-6">Contenido del programa</h3>
+                    <div class="space-y-3">
+                        {% for module in course.modules.all %}
+                        <div class="bg-[#1e293b]/50 border border-gray-800 p-5 rounded-2xl flex justify-between items-center group hover:bg-[#1e293b] transition-colors">
+                            <div class="flex items-center gap-4">
+                                <span class="text-gray-600 font-mono text-sm">{{ forloop.counter|stringformat:"02d" }}</span>
+                                <span class="font-bold text-gray-300 group-hover:text-white">{{ module.title }}</span>
+                            </div>
+                            <span class="text-[10px] bg-gray-800 px-3 py-1 rounded-full text-gray-500 font-black uppercase tracking-widest">
+                                Bloqueado 🔒
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <div class="bg-[#1e293b] border-2 border-blue-600 rounded-[2.5rem] p-8 sticky top-10 shadow-2xl shadow-blue-900/20 overflow-hidden">
+                    <div class="absolute -top-24 -right-24 w-48 h-48 bg-blue-600/10 rounded-full blur-3xl"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="relative rounded-3xl overflow-hidden mb-8 group">
+                            <img src="{{ course.image.url }}" class="w-full aspect-video object-cover blur-[3px] scale-105">
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/50">
+                                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-8">
+                            <span class="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500 mb-2 block">Acceso de por vida</span>
+                            <div class="flex justify-center items-baseline gap-2">
+                                <span class="text-5xl font-black italic">${{ course.price }}</span>
+                                <span class="text-gray-500 font-bold uppercase text-[10px]">CLP</span>
+                            </div>
+                        </div>
+
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-center gap-3 text-sm text-gray-300">
+                                <span class="text-green-500">✓</span> Clases en alta definición
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-gray-300">
+                                <span class="text-green-500">✓</span> Material descargable
+                            </li>
+                            <li class="flex items-center gap-3 text-sm text-gray-300">
+                                <span class="text-green-500">✓</span> Certificado de MD Chile
+                            </li>
+                        </ul>
+
+                        <a href="{% url 'checkout' course.id %}" class="block w-full bg-blue-600 hover:bg-white hover:text-blue-900 text-white py-5 rounded-2xl font-black uppercase text-center tracking-widest shadow-xl shadow-blue-900/40 transition-all transform hover:-translate-y-1 active:scale-95">
+                            Comprar ahora
+                        </a>
+                        
+                        <p class="mt-6 text-[9px] text-center text-gray-500 uppercase font-bold tracking-widest leading-relaxed">
+                            Al pagar serás redirigido para crear tu cuenta de alumno oficial.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

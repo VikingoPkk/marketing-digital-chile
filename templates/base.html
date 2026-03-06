@@ -32,7 +32,7 @@
 
         <div class="hidden md:flex space-x-8 font-bold text-gray-600 uppercase text-sm tracking-widest">
             <a href="{% url 'home' %}" class="hover:text-blue-600 transition">Inicio</a>
-            <a href="{% url 'dashboard' %}" class="hover:text-blue-600 transition">Cursos</a>
+            <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'academia_publica' %}{% endif %}">CURSOS</a>
             <a href="{% url 'services_list' %}" class="hover:text-blue-600 transition">Servicios</a>
             <a class="hover:text-blue-600 transition {% if request.path == '/proyectos/' %}text-blue-600{% endif %}" href="{% url 'projects_list' %}">Proyectos</a>
             <a href="{% url 'blog_list' %}" class="text-gray-700 hover:text-blue-600 font-bold transition">Blog</a>

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-[#0f172a] text-white p-10">
+    <h1 class="text-4xl font-black mb-10 italic uppercase">Cursos Academia Online</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {% for curso in cursos %}
+        <div class="bg-[#1e293b] rounded-[2rem] p-6 border border-gray-800">
+            <h3 class="text-xl font-bold mb-4">{{ curso.title }}</h3>
+            <a href="{% url 'public_course_detail' curso.slug %}" class="bg-blue-600 px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest">Ver Información 🔒</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
