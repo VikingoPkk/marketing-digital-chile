@@ -35,48 +35,65 @@
                         {% endfor %}
                     </div>
                 </div> 
+
                 <div class="mt-20 border-t border-gray-800 pt-16">
-    <div class="flex items-center gap-4 mb-10">
-        <div class="flex text-yellow-500 text-2xl">
-            ★★★★★
-        </div>
-        <h2 class="text-3xl font-black italic uppercase">4.7 · 246 opiniones</h2>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {% for t in testimonios %}
-        <div class="bg-[#1e293b] p-8 rounded-[2rem] border border-gray-800 hover:border-blue-500/30 transition-all group">
-            <div class="flex items-center gap-4 mb-6">
-                {% if t.user_image %}
-                    <img src="{{ t.user_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
-                {% else %}
-                    <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold text-blue-400">
-                        {{ t.name|slice:":1" }}
+                    <div class="flex items-center gap-4 mb-10">
+                        <span class="text-green-500 bg-green-500/10 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Opiniones del curso</span>
+                        <h2 class="text-4xl font-black italic uppercase italic">4.7 · 246 opiniones</h2>
                     </div>
-                {% endif %}
-                <div>
-                    <h4 class="font-black text-white uppercase text-sm italic">{{ t.name }}</h4>
-                    <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">Estudiante Certificado</p>
-                </div>
-            </div>
-            
-            <p class="text-gray-400 leading-relaxed italic">
-                "{{ t.content }}"
-            </p>
-            
-            <div class="mt-6 flex items-center gap-2 text-yellow-500 text-xs">
-                ★★★★★ <span class="text-gray-600 ml-2 font-mono">5.0</span>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
 
-    <div class="mt-10">
-        <a href="#" class="text-blue-500 font-black uppercase text-xs tracking-[0.2em] hover:text-white transition-colors">
-            Ver todas las opiniones →
-        </a>
-    </div>
-</div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {% for t in testimonios %}
+                        <div class="bg-[#1e293b] p-8 rounded-[2.5rem] border border-gray-800 hover:border-blue-500/30 transition-all group">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="relative">
+                                    {% if t.image %}
+                                        <img src="{{ t.image.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-blue-500 shadow-lg group-hover:scale-110 transition-transform">
+                                    {% elif t.user and t.user.profile.image %}
+                                        <img src="{{ t.user.profile.image.url }}" class="w-14 h-14 rounded-full object-cover border-2 border-blue-500 shadow-lg group-hover:scale-110 transition-transform">
+                                    {% else %}
+                                        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-900 flex items-center justify-center font-black text-xl text-white border-2 border-blue-400 shadow-lg group-hover:scale-110 transition-transform uppercase">
+                                            {{ t.name|slice:":1" }}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="absolute -bottom-1 -right-1 bg-[#0f172a] rounded-full p-0.5 border border-gray-800">
+                                        <span class="text-[10px]">🇨🇱</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="font-black text-white uppercase text-sm italic tracking-tight leading-none mb-1">{{ t.name }}</h4>
+                                    <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase italic">Estudiante Certificado</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-gray-400 leading-relaxed text-sm italic mb-6">
+                                "{{ t.comment }}"
+                            </p>
+                            
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-1 text-yellow-500 text-[10px]">
+                                    <span class="mr-1">★</span> {{ t.rating|default:"5.0" }}
+                                </div>
+                                
+                                <div class="flex items-center gap-2 text-gray-600 group-hover:text-red-500 transition-colors cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                    <span class="text-[10px] font-black italic">12</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-12 text-center md:text-left">
+                        <a href="#" class="inline-block text-blue-500 font-black uppercase text-[10px] tracking-[0.3em] hover:text-white transition-colors border-b border-blue-500/30 pb-1">
+                            Ver las 246 opiniones →
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <div class="lg:col-span-1">
@@ -85,7 +102,9 @@
                     
                     <div class="relative z-10">
                         <div class="relative rounded-3xl overflow-hidden mb-8 group">
-                            <img src="{{ course.image.url }}" class="w-full aspect-video object-cover blur-[3px] scale-105">
+                            {% if course.image %}
+                                <img src="{{ course.image.url }}" class="w-full aspect-video object-cover blur-[3px] scale-105">
+                            {% endif %}
                             <div class="absolute inset-0 flex items-center justify-center bg-black/50">
                                 <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

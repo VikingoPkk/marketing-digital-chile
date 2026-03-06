@@ -177,4 +177,6 @@ class Comment(models.Model):
         verbose_name_plural = "Comentarios"
 
     def __str__(self):
-        return f"Comentario de {self.user.username} en {self.post.title}"
+        return f"Comentario de {self.user.username} en {self.post.title}" 
+    
+    image = models.ImageField(upload_to='testimonials/', null=True, blank=True)

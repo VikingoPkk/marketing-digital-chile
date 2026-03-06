@@ -21,7 +21,7 @@ def curso_detalle_publico(request, slug):
 def curso_detalle_publico(request, slug):
     course = get_object_or_404(Course, slug=slug)
     # Traemos testimonios (puedes filtrarlos por curso si luego añades ese campo)
-    testimonios = UserTestimonial.objects.filter(is_active=True)[:4] 
+    testimonios = UserTestimonial.objects.filter(is_approved=True)[:4]
     
     return render(request, 'courses/curso_detalle_publico.html', {
         'course': course,
