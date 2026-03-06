@@ -34,7 +34,49 @@
                         </div>
                         {% endfor %}
                     </div>
+                </div> 
+                <div class="mt-20 border-t border-gray-800 pt-16">
+    <div class="flex items-center gap-4 mb-10">
+        <div class="flex text-yellow-500 text-2xl">
+            ★★★★★
+        </div>
+        <h2 class="text-3xl font-black italic uppercase">4.7 · 246 opiniones</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for t in testimonios %}
+        <div class="bg-[#1e293b] p-8 rounded-[2rem] border border-gray-800 hover:border-blue-500/30 transition-all group">
+            <div class="flex items-center gap-4 mb-6">
+                {% if t.user_image %}
+                    <img src="{{ t.user_image.url }}" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500">
+                {% else %}
+                    <div class="w-12 h-12 rounded-full bg-gray-700 flex items-center justify-center font-bold text-blue-400">
+                        {{ t.name|slice:":1" }}
+                    </div>
+                {% endif %}
+                <div>
+                    <h4 class="font-black text-white uppercase text-sm italic">{{ t.name }}</h4>
+                    <p class="text-[10px] text-blue-500 font-bold tracking-widest uppercase">Estudiante Certificado</p>
                 </div>
+            </div>
+            
+            <p class="text-gray-400 leading-relaxed italic">
+                "{{ t.content }}"
+            </p>
+            
+            <div class="mt-6 flex items-center gap-2 text-yellow-500 text-xs">
+                ★★★★★ <span class="text-gray-600 ml-2 font-mono">5.0</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-10">
+        <a href="#" class="text-blue-500 font-black uppercase text-xs tracking-[0.2em] hover:text-white transition-colors">
+            Ver todas las opiniones →
+        </a>
+    </div>
+</div>
             </div>
 
             <div class="lg:col-span-1">
