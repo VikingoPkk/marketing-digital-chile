@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ asunto }}</title>
+</head>
+<body style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; -webkit-text-size-adjust: 100%;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f7f6;">
+        <tr>
+            <td align="center" style="padding: 40px 10px;">
+                <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #1a2235; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    
+                    <tr>
+                        <td align="center" style="background-color: #0b1220; padding: 35px 20px;">
+                            <img src="https://mdchile.cl/static/img/logo.png" alt="Marketing Digital Chile" width="200" style="display: block; border: 0;">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 45px 40px; color: #ffffff;">
+                            <h1 style="color: #007bff; font-size: 26px; margin: 0 0 25px 0; font-weight: bold;">
+                                ¡Hola, {{ first_name }}! 🚀
+                            </h1>
+                            
+                            <div style="font-size: 16px; line-height: 1.8; color: #cbd5e0; margin-bottom: 30px;">
+                                {{ mensaje_personalizado|safe }}
+                            </div>
+
+                            {% if doc_url %}
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 25px; margin-bottom: 25px;">
+                                <tr>
+                                    <td style="background-color: #2d3748; border-left: 5px solid #dc3545; border-radius: 8px; padding: 20px;">
+                                        <p style="margin: 0 0 10px 0; color: #ffffff; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                                            <span style="color: #dc3545;">●</span> Recurso PDF para descargar
+                                        </p>
+                                        <a href="{{ doc_url }}" style="color: #ff4d4d; text-decoration: underline; font-size: 15px; font-weight: 500;">
+                                            Haga clic aquí para obtener su material de apoyo &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+
+                            {% if video_url %}
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 25px; margin-bottom: 25px;">
+                                <tr>
+                                    <td align="center" style="background-color: #000000; border-radius: 12px; border: 1px solid #30363d; padding: 0; overflow: hidden;">
+                                        <a href="{{ video_url }}" style="text-decoration: none; display: block;">
+                                            <div style="padding: 50px 20px; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));">
+                                                <p style="color: #ffffff; font-weight: bold; font-size: 18px; margin: 0;">🎬 VER MASTERCLASS EXCLUSIVA</p>
+                                                <p style="color: #007bff; font-size: 13px; margin: 10px 0 0 0;">(Toque para reproducir video)</p>
+                                            </div>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            {% endif %}
+
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 40px;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ url_boton }}" target="_blank" style="background-color: #ff8c00; color: #ffffff; padding: 20px 40px; text-decoration: none; border-radius: 12px; font-weight: bold; font-size: 17px; display: inline-block; transition: background-color 0.3s ease;">
+                                            {{ texto_boton|upper }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td align="center" style="padding: 35px 40px; background-color: #0b1220; border-top: 1px solid #30363d;">
+                            <p style="margin: 0; color: #718096; font-size: 12px; line-height: 1.5;">
+                                <strong>Marketing Digital Chile</strong><br>
+                                © 2026 Todos los derechos reservados.<br><br>
+                                Has recibido este correo porque eres alumno registrado en nuestra academia.<br>
+                                Si no deseas recibir más correos, puedes gestionar tus notificaciones en tu perfil.
+                            </p>
+                            <div style="margin-top: 20px;">
+                                <a href="https://mdchile.cl" style="color: #007bff; text-decoration: none; font-size: 12px; font-weight: bold;">Visitar Academia</a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

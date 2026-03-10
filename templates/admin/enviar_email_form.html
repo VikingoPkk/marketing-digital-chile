@@ -1,0 +1,131 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container-fluid mt-4" style="font-family: 'Inter', sans-serif;">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0" style="border-radius: 15px; background: #ffffff;">
+                <div class="card-body p-4">
+                    <h4 class="mb-4 fw-bold" style="color: #0b1220;">
+                        <i class="fas fa-code me-2 text-primary"></i>Editor de Campaña HTML
+                    </h4>
+                    
+                    <form action="" method="post" id="campaignForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted">Audiencia Seleccionada</label>
+                            <div class="badge bg-light text-dark p-2 border w-100 text-start">
+                                <i class="fas fa-users me-2"></i> {{ users.count }} Alumnos seleccionados
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Asunto del Correo</label>
+                            <input type="text" name="subject" id="subjectInput" class="form-control" 
+                                   placeholder="Ej: ¡Angelo, nuevas lecciones! 🚀" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Cuerpo del Mensaje (Soporta HTML)</label>
+                            <textarea name="message" id="messageInput" rows="8" class="form-control" 
+                                      style="font-family: 'Courier New', monospace; font-size: 14px;"
+                                      placeholder="<p>Hola Angelo,</p>..." required></textarea>
+                            <div class="form-text">Puede usar etiquetas HTML para ajustar espacios y estilos.</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Texto del Botón</label>
+                                <input type="text" name="button_text" id="buttonTextInput" class="form-control" value="VOLVER A MIS CURSOS">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">URL de Destino</label>
+                                <input type="url" name="button_url" id="buttonUrlInput" class="form-control" value="https://mdchile.cl/dashboard/">
+                            </div>
+                        </div>
+
+                        <div class="row border-top pt-3 mt-2">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-file-pdf text-danger"></i> Link Documento</label>
+                                <input type="url" name="document_url" id="docInput" class="form-control" placeholder="URL del PDF...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold"><i class="fas fa-video text-primary"></i> Link Video</label>
+                                <input type="url" name="video_url" id="videoInput" class="form-control" placeholder="YouTube/Vimeo...">
+                            </div>
+                        </div>
+
+                        {% for user in users %}
+                            <input type="hidden" name="_selected_action" value="{{ user.pk }}">
+                        {% endfor %}
+                        
+                        <input type="hidden" name="action" value="enviar_campana_personalizada">
+                        <input type="hidden" name="apply" value="True">
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold" style="border-radius: 10px;">
+                                LANZAR CAMPAÑA <i class="fas fa-bolt ms-2"></i>
+                            </button>
+                            <a href="../" class="btn btn-link text-muted">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="sticky-top" style="top: 20px;">
+                <h6 class="text-uppercase fw-bold text-muted mb-3"><i class="fas fa-eye me-2"></i>Vista Previa del Alumno</h6>
+                <div class="device-preview shadow-lg" style="background: #f4f7f6; border-radius: 30px; padding: 20px; border: 12px solid #222;">
+                    <div id="emailPreview" style="background: white; min-height: 600px; border-radius: 5px; overflow-y: auto;">
+                        <div style="background: #0b1220; padding: 20px; text-align: center;">
+                            <img src="https://mdchile.cl/static/img/logo.png" height="40" alt="MD Chile">
+                        </div>
+                        <div style="padding: 30px; color: #333;">
+                            <h2 style="color: #007bff;">¡Hola, {{ users.first.first_name|default:users.first.username }}! 🚀</h2>
+                            <div id="previewText" style="font-size: 16px; line-height: 1.6;">Su mensaje aparecerá aquí...</div>
+                            
+                            <div id="previewDoc" style="display:none; margin-top: 20px; padding: 15px; background: #fff5f5; border-left: 4px solid #dc3545; border-radius: 5px;">
+                                <p style="margin: 0; color: #dc3545; font-weight: bold;"><i class="fas fa-file-pdf"></i> Documento Adjunto</p>
+                            </div>
+
+                            <div id="previewVideo" style="display:none; margin-top: 20px; text-align: center; background: #000; padding: 40px; border-radius: 10px; color: white;">
+                                <i class="fas fa-play-circle fa-3x"></i><br>REPRODUCIR VIDEO
+                            </div>
+
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button id="previewButton" disabled style="background: #ff8c00; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; text-transform: uppercase;">
+                                    VOLVER A MIS CURSOS
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const msgIn = document.getElementById('messageInput');
+    const btnIn = document.getElementById('buttonTextInput');
+    const docIn = document.getElementById('docInput');
+    const vidIn = document.getElementById('videoInput');
+
+    function sync() {
+        // IMPORTANTE: innerHTML permite renderizar el código que usted escriba
+        document.getElementById('previewText').innerHTML = msgIn.value || "Su mensaje aparecerá aquí...";
+        document.getElementById('previewButton').innerText = btnIn.value.toUpperCase() || "VOLVER A MIS CURSOS";
+        document.getElementById('previewDoc').style.display = docIn.value ? 'block' : 'none';
+        document.getElementById('previewVideo').style.display = vidIn.value ? 'block' : 'none';
+    }
+
+    msgIn.addEventListener('input', sync);
+    btnIn.addEventListener('input', sync);
+    docIn.addEventListener('input', sync);
+    vidIn.addEventListener('input', sync);
+</script>
+{% endblock %}

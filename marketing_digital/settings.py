@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -114,8 +115,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Permite que el navegador renderice iframes correctamente (Para videos de YouTube)
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-# --- CONFIGURACIÓN DE ENVÍO DE CORREOS ---
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# --- CONFIGURACIÓN DE ENVÍO DE CORREOS (GMAIL) ---
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
@@ -138,7 +138,7 @@ JAZZMIN_SETTINGS = {
     # --- ESTO ACTIVA EL NÚMERO DE NOTIFICACIÓN (+1 a +99) ---
     "menu_count": [
         {
-            "model": "agency.contactmessage", # IMPORTANTE: En minúsculas aquí
+            "model": "agency.contactmessage", 
             "func": lambda obj: obj.objects.filter(is_read=False).count() 
         }
     ],
@@ -158,7 +158,7 @@ JAZZMIN_SETTINGS = {
     "show_sidebar": True,
     "navigation_expanded": True,
     "order_with_respect_to": ["agency", "courses", "auth"],
-    "show_ui_builder": True, # <--- INTERRUPTOR MAESTRO PARA COMPONENTES DINÁMICOS
+    "show_ui_builder": True, 
 }
 
 JAZZMIN_UI_CONFIG = {
@@ -184,5 +184,18 @@ JAZZMIN_UI_CONFIG = {
     "theme": "flatly", 
     "dark_mode_theme": "darkly", 
 } 
+
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+# =============================================================================
+# PROTOCOLO DE COMUNICACIONES REAL (GMAIL)
+# =============================================================================
+# Cambiamos el backend de 'filebased' a 'smtp'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'oncocit2@gmail.com' # Su correo emisor
+EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy' # Su contraseña de aplicación
+DEFAULT_FROM_EMAIL = 'Marketing Digital Chile <oncocit2@gmail.com>'

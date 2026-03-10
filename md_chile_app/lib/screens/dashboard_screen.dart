@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart'; // Importamos el sensor
-import 'course_detail_screen.dart'; 
-import 'store_screen.dart'; // IMPORTADO: Nueva pantalla de tienda
+import '../services/api_service.dart'; // Sensor actualizado
+import 'course_detail_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -13,6 +12,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   List cursos = [];
   bool cargando = true;
+  bool mostrarTienda = false; // El interruptor táctico
 
   @override
   void initState() {
@@ -20,8 +20,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     cargarDatos();
   }
 
+  // Ahora el método es inteligente y sabe qué lista pedir
   void cargarDatos() async {
-    final datos = await ApiService.obtenerCursos();
+    setState(() => cargando = true);
+    final datos = mostrarTienda 
+        ? await ApiService.obtenerCursosTienda() 
+        : await ApiService.obtenerCursosPropios();
+    
     setState(() {
       cursos = datos;
       cargando = false;
@@ -32,9 +37,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("MD Chile - Mis Cursos"),
-        backgroundColor: const Color(0xFF0055FF),
-        foregroundColor: Colors.white,
+        title: Text(mostrarTienda ? "Tienda de Cursos" : "MD Chile - Mis Cursos"),
+        backgroundColor: mostrarTienda ? Colors.orange : const Color(0xFF0055FF), // Cambio visual
       ),
       drawer: Drawer(
         child: ListView(
@@ -42,28 +46,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             const UserAccountsDrawerHeader(
               decoration: BoxDecoration(color: Color(0xFF0055FF)),
-              accountName: Text("Capitán Angelo", style: TextStyle(fontWeight: FontWeight.bold)),
-              accountEmail: Text("angelo@mdchile.cl"),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, size: 45, color: Color(0xFF0055FF)),
-              ),
+              accountName: Text("Usuario Stark", style: TextStyle(fontWeight: FontWeight.bold)),
+              accountEmail: Text("stark@mdchile.cl"),
+              currentAccountPicture: CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person)),
             ),
+            // BOTÓN 1: MIS CURSOS
             ListTile(
               leading: const Icon(Icons.school, color: Color(0xFF0055FF)),
               title: const Text("Mis Cursos Activos"),
-              onTap: () => Navigator.pop(context),
-            ),
-            // ACTUALIZACIÓN: Botón funcional hacia la Tienda
-            ListTile(
-              leading: const Icon(Icons.store, color: Color(0xFF0055FF)),
-              title: const Text("Tienda de Cursos"),
+              selected: !mostrarTienda,
               onTap: () {
-                Navigator.pop(context); // Cierra el menú
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const StoreScreen()),
-                );
+                setState(() => mostrarTienda = false);
+                Navigator.pop(context);
+                cargarDatos();
+              },
+            ),
+            // BOTÓN 2: TIENDA
+            ListTile(
+              leading: const Icon(Icons.store, color: Colors.orange),
+              title: const Text("Tienda de Cursos"),
+              selected: mostrarTienda,
+              onTap: () {
+                setState(() => mostrarTienda = true);
+                Navigator.pop(context);
+                cargarDatos();
               },
             ),
             const Divider(),
@@ -77,31 +83,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: cargando 
         ? const Center(child: CircularProgressIndicator())
-        : ListView.builder(
-            padding: const EdgeInsets.all(10),
-            itemCount: cursos.length,
-            itemBuilder: (context, index) {
-              final curso = cursos[index];
-              return Card(
-                elevation: 4,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: ListTile(
-                  leading: curso['image'] != null 
-                    ? Image.network(curso['image'], width: 60, height: 60, fit: BoxFit.cover)
-                    : const Icon(Icons.book, size: 50),
-                  title: Text(curso['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CourseDetailScreen(curso: curso),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
+        : RefreshIndicator(
+            onRefresh: () async => cargarDatos(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(10),
+              itemCount: cursos.length,
+              itemBuilder: (context, index) {
+                final curso = cursos[index];
+                return Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: const Icon(Icons.book, size: 50),
+                    title: Text(curso['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: mostrarTienda ? Text("Precio: ${curso['price'] ?? 'Consultar'}") : null,
+                    trailing: Icon(mostrarTienda ? Icons.add_shopping_cart : Icons.arrow_forward_ios),
+                    onTap: () {
+                      // Si está en la tienda, podríamos llevarlo al checkout
+                      if (!mostrarTienda) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CourseDetailScreen(curso: curso)),
+                        );
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
           ),
     );
   }

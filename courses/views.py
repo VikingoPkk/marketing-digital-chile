@@ -221,3 +221,19 @@ class CreatePaymentPreference(APIView):
     def post(self, request, course_id):
         payment_url = "https://www.mercadopago.com.cl/checkout/v1/redirect?pref_id=TEST_MODE"
         return Response({"checkout_url": payment_url})
+
+# --- NUEVOS ENDPOINTS DE FILTRADO PARA LA APP ---
+
+class MisCursosAPI(generics.ListAPIView):
+    """Devuelve solo los cursos comprados por el usuario"""
+    serializer_class = CursoSerializer
+    def get_queryset(self):
+        user = self.request.user # Django detecta quién pregunta
+        return Course.objects.filter(enrollment__user=user, is_published=True)
+
+class TiendaCursosAPI(generics.ListAPIView):
+    """Devuelve solo los cursos que el usuario NO tiene"""
+    serializer_class = CursoSerializer
+    def get_queryset(self):
+        user = self.request.user
+        return Course.objects.exclude(enrollment__user=user).filter(is_published=True)
