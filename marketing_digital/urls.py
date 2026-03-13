@@ -28,7 +28,6 @@ urlpatterns = [
     path('users/', include('users.urls')),
 
     # --- ENDPOINTS DE AUTENTICACIÓN (LOGIN ÚNICO WEB/APP) ---
-    # Esta es la URL que el AuthService de Flutter usará para validar usuarios
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
@@ -36,9 +35,12 @@ urlpatterns = [
     path('api/cursos/', CursoListAPI.as_view(), name='api-cursos'),
     path('api/cursos/<int:course_id>/lecciones/', LessonListAPI.as_view(), name='api-lecciones'),
     path('api/lecciones/<int:lesson_id>/completar/', ToggleCompleteAPI.as_view(), name='api-leccion-completar'),
-    
+
+    # --- RUTAS DE MARKETING Y TRACKING ---
+    path('t/', include('marketing.urls')), 
 ]
 
-# Servir archivos multimedia (Para ver las miniaturas de los cursos en la App)
+# Servir archivos multimedia y estáticos
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

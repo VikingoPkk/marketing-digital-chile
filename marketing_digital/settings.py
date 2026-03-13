@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Configuración de desarrollo
 SECRET_KEY = 'django-insecure-^3_ttqv8tsxw9fc80*d=#4)b*frt3grya(_w^sx#re9nbn#0eo'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Aplicaciones
 INSTALLED_APPS = [
@@ -20,23 +20,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites', 
     'corsheaders',
-    'import_export', # <-- ARTILLERÍA DE EXPORTACIÓN 
+    'import_export', 
     'rest_framework',
     'agency',  
     'users',   
     'courses',
-
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'rest_framework_simplejwt',
+    'marketing', # Nuestra nueva app de Mailchimp casero
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # AGREGAR ESTO AQUÍ
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -90,7 +90,6 @@ SITE_ID = 1
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_SIGNUP_FIELDS = ['email', 'password1'] 
 ACCOUNT_EMAIL_VERIFICATION = 'none' 
 
 LOGIN_REDIRECT_URL = '/dashboard/'
@@ -112,16 +111,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'users.User'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField' 
 
-# Permite que el navegador renderice iframes correctamente (Para videos de YouTube)
+# Permite que el navegador renderice iframes correctamente
 X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-# --- CONFIGURACIÓN DE ENVÍO DE CORREOS (GMAIL) ---
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_CHARSET = 'utf-8'
-EMAIL_HOST_USER = 'oncocit2@gmail.com'
-EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy'
 
 # =============================================================================
 # CONFIGURACIÓN DE JAZZMIN (DISEÑO PREMIUM DEL ADMIN)
@@ -135,7 +126,7 @@ JAZZMIN_SETTINGS = {
     "search_model": ["agency.Post", "courses.Course"],
     "user_avatar": "profile_picture",
 
-    # --- ESTO ACTIVA EL NÚMERO DE NOTIFICACIÓN (+1 a +99) ---
+    # --- NOTIFICACIONES EN EL MENÚ ---
     "menu_count": [
         {
             "model": "agency.contactmessage", 
@@ -143,9 +134,11 @@ JAZZMIN_SETTINGS = {
         }
     ],
 
+    # --- ICONOS DE PESTAÑAS ---
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
+        "users.User": "fas fa-user-friends",
         "agency.Post": "fas fa-blog",
         "agency.Service": "fas fa-rocket",
         "agency.Project": "fas fa-code",
@@ -153,12 +146,42 @@ JAZZMIN_SETTINGS = {
         "courses.Course": "fas fa-graduation-cap",
         "courses.Lesson": "fas fa-play-circle",
         "courses.Enrollment": "fas fa-user-graduate",
+        # Icono para la nueva app de Marketing
+        "marketing.CampañaPro": "fas fa-paper-plane",
+        "marketing.TrackingCorreo": "fas fa-chart-bar",
     },
     
+    # --- ORDEN DE LAS PESTAÑAS (Aquí aparece EMAIL MARKETING) ---
+    "sidebar_order": [
+        "auth", 
+        "users", 
+        "marketing",  # Pestaña de Email Marketing visible
+        "courses", 
+        "agency"
+    ],
+
     "show_sidebar": True,
     "navigation_expanded": True,
-    "order_with_respect_to": ["agency", "courses", "auth"],
+    
+    # --- LINKS SUPERIORES ---
+    "top_links": [
+        {"name": "Inicio", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "Analítica de Marketing", "url": "marketing_stats"}, # Acceso directo a tu Dashboard
+    ],
+
     "show_ui_builder": True, 
+
+    # settings.py dentro de JAZZMIN_SETTINGS
+    "custom_links": {
+        "marketing": [ # Debajo de la app marketing aparecerá este botón
+            {
+                "name": "Redactar Nueva Campaña", 
+                "url": "/admin/users/user/", 
+                "icon": "fas fa-paper-plane",
+                "permissions": ["auth.view_user"]
+            },
+        ],
+    },
 }
 
 JAZZMIN_UI_CONFIG = {
@@ -189,13 +212,15 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # =============================================================================
-# PROTOCOLO DE COMUNICACIONES REAL (GMAIL)
+# PROTOCOLO DE ENVÍO DE CORREOS (GMAIL)
 # =============================================================================
-# Cambiamos el backend de 'filebased' a 'smtp'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'oncocit2@gmail.com' # Su correo emisor
-EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy' # Su contraseña de aplicación
+EMAIL_HOST_USER = 'oncocit2@gmail.com'
+EMAIL_HOST_PASSWORD = 'nixqpuwqttggulgy'
 DEFAULT_FROM_EMAIL = 'Marketing Digital Chile <oncocit2@gmail.com>'
+
+# URL base para el tracking de imágenes y clicks
+SITE_URL = "http://127.0.0.1:8000"
