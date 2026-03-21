@@ -1,7 +1,7 @@
 import io
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
@@ -10,6 +10,9 @@ from django.utils.html import strip_tags
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.lib.units import cm
+
+# Importación de IA
+from marketing.servicios_ia import generar_respuesta_experto_ia
 
 # API y REST Framework
 from rest_framework import generics
@@ -93,13 +96,36 @@ def course_detail(request, course_id):
     lesson_id = request.GET.get('lesson')
     current_lesson = get_object_or_404(Lesson, id=lesson_id, module__course=course) if lesson_id else lessons.first()
     
+    # PROCESAMIENTO DE PREGUNTA AL EXPERTO CON IA
     if request.method == 'POST' and 'submit_query' in request.POST:
-        CourseQuery.objects.create(user=request.user, course=course, lesson=current_lesson, question=request.POST.get('question'))
+        pregunta_txt = request.POST.get('question')
+        
+        # 1. Crear la duda
+        nueva_duda = CourseQuery.objects.create(
+            user=request.user, 
+            course=course, 
+            lesson=current_lesson, 
+            question=pregunta_txt
+        )
+        
+        # 2. Consultar Gemini Pro (A prueba de fallos)
+        try:
+            sugerencia = generar_respuesta_experto_ia(pregunta_txt, clase_contexto=current_lesson.title)
+            nueva_duda.respuesta_ia = sugerencia
+            nueva_duda.save()
+        except:
+            pass # Si la IA falla, la duda se guarda igual para el humano
+
+        messages.success(request, "Tu duda ha sido enviada al experto.")
         return redirect(f"/course/{course.id}/?lesson={current_lesson.id}")
 
     completas = LessonProgress.objects.filter(user=request.user, lesson__module__course=course, is_completed=True).count()
     progreso = int((completas / lessons.count()) * 100) if lessons.count() > 0 else 0
-    return render(request, 'courses/course_detail.html', {'course': course, 'lessons': lessons, 'current_lesson': current_lesson, 'progreso_curso': progreso, 'mis_dudas': CourseQuery.objects.filter(user=request.user, lesson=current_lesson)})
+    return render(request, 'courses/course_detail.html', {
+        'course': course, 'lessons': lessons, 'current_lesson': current_lesson, 
+        'progreso_curso': progreso, 
+        'mis_dudas': CourseQuery.objects.filter(user=request.user, lesson=current_lesson)
+    })
 
 @login_required
 def toggle_lesson_completion(request, lesson_id):
@@ -118,10 +144,8 @@ def checkout(request, course_id): return render(request, 'courses/checkout.html'
 
 @login_required
 def take_quiz(request, quiz_id):
-    """Vista de cuestionarios corregida para evitar fallos de redirección."""
     quiz = get_object_or_404(Quiz, id=quiz_id)
     questions = quiz.questions.all()
-    # Obtenemos el ID del curso de forma segura a través del módulo
     course_id = quiz.module.course.id 
 
     if request.method == 'POST':
@@ -138,7 +162,6 @@ def take_quiz(request, quiz_id):
                 'is_correct': is_correct
             })
         
-        # Guardamos el resultado con el course_id explícito
         request.session['quiz_result'] = {
             'quiz_title': quiz.title, 
             'quiz_id': quiz.id, 
@@ -157,8 +180,6 @@ def edit_profile(request):
         messages.success(request, "Perfil actualizado.")
         return redirect('dashboard')
     return render(request, 'account/edit_profile.html')
-
-# --- FUNCIONES RESTAURADAS PARA CERTIFICADOS ---
 
 @login_required
 def check_certificate(request, course_id):
@@ -186,7 +207,6 @@ def generate_diploma_pdf(request, certificate_id):
 # ==========================================
 # 3. VISTAS DEL BLOG
 # ==========================================
-
 def blog_list(request): return render(request, 'agency/blog_list.html', {'posts': Post.objects.filter(is_published=True)})
 def blog_detail(request, slug): return render(request, 'agency/blog_detail.html', {'post': get_object_or_404(Post, slug=slug, is_published=True)})
 def post_like(request, post_id):
@@ -197,9 +217,8 @@ def privacidad(request): return render(request, 'legal/privacidad.html')
 def terminos(request): return render(request, 'legal/terminos.html')
 
 # ==========================================
-# 4. API ENDPOINTS PARA APP MÓVIL
+# 4. API ENDPOINTS
 # ==========================================
-
 class CursoListAPI(generics.ListAPIView):
     queryset = Course.objects.filter(is_published=True)
     serializer_class = CursoSerializer
@@ -211,28 +230,23 @@ class LessonListAPI(generics.ListAPIView):
 class ToggleCompleteAPI(APIView):
     def post(self, request, lesson_id):
         from django.contrib.auth.models import User
-        user = User.objects.first() # Temporal para pruebas
+        user = User.objects.first() 
         progress, _ = LessonProgress.objects.get_or_create(user=user, lesson=get_object_or_404(Lesson, id=lesson_id))
         progress.is_completed = not progress.is_completed; progress.save()
         return Response({"status": "ok", "is_completed": progress.is_completed})
 
 class CreatePaymentPreference(APIView):
-    """Genera el enlace de pago seguro para la App"""
     def post(self, request, course_id):
         payment_url = "https://www.mercadopago.com.cl/checkout/v1/redirect?pref_id=TEST_MODE"
         return Response({"checkout_url": payment_url})
 
-# --- NUEVOS ENDPOINTS DE FILTRADO PARA LA APP ---
-
 class MisCursosAPI(generics.ListAPIView):
-    """Devuelve solo los cursos comprados por el usuario"""
     serializer_class = CursoSerializer
     def get_queryset(self):
-        user = self.request.user # Django detecta quién pregunta
+        user = self.request.user 
         return Course.objects.filter(enrollment__user=user, is_published=True)
 
 class TiendaCursosAPI(generics.ListAPIView):
-    """Devuelve solo los cursos que el usuario NO tiene"""
     serializer_class = CursoSerializer
     def get_queryset(self):
         user = self.request.user

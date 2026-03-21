@@ -112,14 +112,15 @@ class Certificate(models.Model):
     def __str__(self):
         return f"Diploma {self.course.title} - {self.user.username}"
 
-# --- NUEVO BLOQUE 5: CONSULTAS ACADÉMICAS ---
+# --- NUEVO BLOQUE 5: CONSULTAS ACADÉMICAS CON IA ---
 
 class CourseQuery(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     question = models.TextField()
-    answer = models.TextField(blank=True, null=True)
+    answer = models.TextField(blank=True, null=True) # Respuesta manual del profe
+    respuesta_ia = models.TextField(blank=True, null=True, verbose_name="Sugerencia IA Gemini") # Nuevo
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

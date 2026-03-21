@@ -1,5 +1,0 @@
-package com.example.md_chile_app
-
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity : FlutterActivity()
